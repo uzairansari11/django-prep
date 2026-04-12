@@ -65,9 +65,9 @@ const STEPS = [
 
 const STATUS_COLORS = {
   slate: {
-    bg: 'bg-slate-100 dark:bg-slate-700/50',
-    text: 'text-slate-600 dark:text-slate-300',
-    border: 'border-slate-200 dark:border-slate-600',
+    bg: 'bg-slate-100 dark:bg-zinc-800/50',
+    text: 'text-slate-600 dark:text-zinc-300',
+    border: 'border-slate-200 dark:border-zinc-600',
   },
   amber: {
     bg: 'bg-amber-50 dark:bg-amber-900/30',
@@ -123,18 +123,18 @@ export default function QuerysetEvaluation() {
   const colors = STATUS_COLORS[step.statusColor];
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
+    <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-700 p-6 transition-colors duration-200">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">QuerySet Lazy Evaluation</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">QuerySet Lazy Evaluation</h3>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Step through how Django defers database queries
           </p>
         </div>
         <button
           onClick={handleReset}
-          className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline transition-colors duration-150"
+          className="text-xs text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 underline transition-colors duration-150"
         >
           Reset
         </button>
@@ -156,13 +156,13 @@ export default function QuerysetEvaluation() {
                   ? 'bg-emerald-500 text-white'
                   : i === currentStep
                     ? 'bg-indigo-600 text-white ring-2 ring-indigo-300 dark:ring-indigo-700'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500'
+                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500'
               }`}
             >
               {i + 1}
             </button>
             {i < STEPS.length - 1 && (
-              <div className={`w-6 h-0.5 transition-colors duration-300 ${i < currentStep ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-slate-700'}`} />
+              <div className={`w-6 h-0.5 transition-colors duration-300 ${i < currentStep ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-zinc-800'}`} />
             )}
           </div>
         ))}
@@ -170,7 +170,7 @@ export default function QuerysetEvaluation() {
 
       {/* QuerySet chain builder */}
       <div className="mb-5">
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Current QuerySet expression:</p>
+        <p className="text-xs text-slate-500 dark:text-zinc-400 mb-2 font-medium">Current QuerySet expression:</p>
         <div className="bg-slate-900 rounded-xl px-4 py-3 font-mono text-xs overflow-x-auto">
           <AnimatePresence mode="wait">
             <motion.span
@@ -245,7 +245,7 @@ export default function QuerysetEvaluation() {
             transition={{ duration: 0.4 }}
             className="mb-5"
           >
-            <p className="text-xs font-medium text-slate-600 dark:text-slate-400 mb-2">Results (cached in QuerySet):</p>
+            <p className="text-xs font-medium text-slate-600 dark:text-zinc-400 mb-2">Results (cached in QuerySet):</p>
             <div className="bg-slate-900 rounded-xl p-3 space-y-1">
               {STEPS[4].results.map((result, i) => (
                 <motion.div
@@ -271,9 +271,9 @@ export default function QuerysetEvaluation() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 mb-5"
+          className="bg-slate-50 dark:bg-zinc-900 rounded-xl p-4 border border-slate-200 dark:border-zinc-700 mb-5"
         >
-          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">{step.explanation}</p>
+          <p className="text-xs text-slate-700 dark:text-zinc-300 leading-relaxed">{step.explanation}</p>
         </motion.div>
       </AnimatePresence>
 
@@ -282,7 +282,7 @@ export default function QuerysetEvaluation() {
         <button
           onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
           disabled={currentStep === 0}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed border border-transparent dark:border-slate-700"
+          className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed border border-transparent dark:border-zinc-700"
         >
           ← Prev
         </button>

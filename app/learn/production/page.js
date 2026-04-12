@@ -121,12 +121,12 @@ export default function ProductionPage() {
   const hasActiveFilters = search || difficulty !== 'all' || activeSubcategory !== 'all';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       {/* Page header */}
-      <div className="bg-white dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/60">
+      <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-5">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
             <Link
               href="/learn"
               className="flex items-center gap-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
@@ -148,7 +148,7 @@ export default function ProductionPage() {
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                   Production Patterns
                 </h1>
-                <p className="mt-1 text-slate-500 dark:text-slate-400 max-w-lg">
+                <p className="mt-1 text-slate-500 dark:text-zinc-400 max-w-lg">
                   From auth to deployment — build Django apps that scale.
                 </p>
               </div>
@@ -174,9 +174,9 @@ export default function ProductionPage() {
               <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Completed</span>
               <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{completedCount}</p>
             </div>
-            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60">
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Subcategories</span>
-              <p className="text-xl font-bold text-slate-700 dark:text-slate-300">{productionSubcategories.length}</p>
+            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
+              <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Subcategories</span>
+              <p className="text-xl font-bold text-slate-700 dark:text-zinc-300">{productionSubcategories.length}</p>
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function ProductionPage() {
                   className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-150 shrink-0 ${
                     activeSubcategory === 'all'
                       ? 'bg-amber-600 text-white shadow-md shadow-amber-500/30'
-                      : 'bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600 dark:hover:text-amber-400'
+                      : 'bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600 dark:hover:text-amber-400'
                   }`}
                 >
                   <Flame className="w-3.5 h-3.5" />
@@ -212,7 +212,7 @@ export default function ProductionPage() {
                       className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-150 shrink-0 ${
                         isActive
                           ? 'bg-amber-600 text-white shadow-md shadow-amber-500/30'
-                          : 'bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 text-slate-600 dark:text-slate-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600 dark:hover:text-amber-400'
+                          : 'bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600 dark:hover:text-amber-400'
                       }`}
                     >
                       {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
@@ -241,7 +241,7 @@ export default function ProductionPage() {
 
             {/* Results meta */}
             <div className="flex items-center justify-between mb-5">
-              <p className="text-sm text-slate-500 dark:text-slate-400">
+              <p className="text-sm text-slate-500 dark:text-zinc-400">
                 {filtered.length === productionTopics.length
                   ? `${productionTopics.length} topics`
                   : `${filtered.length} of ${productionTopics.length} topics`}
@@ -254,7 +254,7 @@ export default function ProductionPage() {
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
-                  className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                  className="text-xs font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                 >
                   Clear filters
                 </button>
@@ -263,10 +263,10 @@ export default function ProductionPage() {
 
             {/* Topics grid */}
             {filtered.length === 0 ? (
-              <div className="text-center py-16 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+              <div className="text-center py-16 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800">
                 <Flame className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="font-semibold text-slate-700 dark:text-slate-300">No topics found</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="font-semibold text-slate-700 dark:text-zinc-300">No topics found</p>
+                <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
                   Try a different search term, difficulty, or subcategory.
                 </p>
                 <button
@@ -295,7 +295,7 @@ export default function ProductionPage() {
 
           {/* Right sidebar — subcategory progress */}
           <aside className="hidden xl:block w-64 shrink-0">
-            <div className="sticky top-6 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4">
+            <div className="sticky top-6 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <h2 className="font-bold text-slate-900 dark:text-white text-sm">Subcategory Progress</h2>
@@ -317,11 +317,11 @@ export default function ProductionPage() {
                           {IconComponent && (
                             <IconComponent className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
                           )}
-                          <span className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+                          <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 truncate">
                             {sub.label}
                           </span>
                         </div>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0 ml-2">
+                        <span className="text-xs text-slate-500 dark:text-zinc-400 shrink-0 ml-2">
                           {sub.completed}/{sub.total}
                         </span>
                       </div>

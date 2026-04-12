@@ -33,15 +33,15 @@ import { checkAnswer } from '@/lib/answerChecker'
 
 function SectionHeading({ icon: Icon, children }) {
   return (
-    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide mb-3">
-      <Icon className="w-4 h-4 text-slate-400 dark:text-slate-500" aria-hidden="true" />
+    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-wide mb-3">
+      <Icon className="w-4 h-4 text-slate-400 dark:text-zinc-500" aria-hidden="true" />
       {children}
     </h3>
   )
 }
 
 function Divider() {
-  return <hr className="border-slate-200 dark:border-slate-700/60" />
+  return <hr className="border-slate-200 dark:border-zinc-800" />
 }
 
 // ─── TestResultPanel ──────────────────────────────────────────────────────────
@@ -80,8 +80,8 @@ const STATUS_CONFIG = {
     barColor: 'bg-red-500',
   },
   empty: {
-    bg: 'bg-slate-50 dark:bg-slate-800',
-    border: 'border-slate-200 dark:border-slate-700',
+    bg: 'bg-slate-50 dark:bg-zinc-900',
+    border: 'border-slate-200 dark:border-zinc-700',
     icon: AlertCircle,
     iconColor: 'text-slate-500',
     label: 'Empty',
@@ -115,7 +115,7 @@ function TestResultPanel({ result, onDismiss }) {
           <Icon className={['w-6 h-6 shrink-0', cfg.iconColor].join(' ')} aria-hidden="true" />
           <div>
             <p className={['text-base font-bold', cfg.iconColor].join(' ')}>{cfg.label}</p>
-            <p className="text-sm text-slate-700 dark:text-slate-300 leading-snug mt-0.5">
+            <p className="text-sm text-slate-700 dark:text-zinc-300 leading-snug mt-0.5">
               {result.feedback}
             </p>
           </div>
@@ -123,7 +123,7 @@ function TestResultPanel({ result, onDismiss }) {
         <button
           onClick={onDismiss}
           aria-label="Dismiss result"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/50 transition-colors shrink-0"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors shrink-0"
         >
           <X className="w-4 h-4" />
         </button>
@@ -131,11 +131,11 @@ function TestResultPanel({ result, onDismiss }) {
 
       {/* Score bar */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
+        <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-zinc-400">
           <span>Score</span>
           <span>{result.score}/100</span>
         </div>
-        <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+        <div className="h-2 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
           <div
             className={['h-full rounded-full transition-all duration-500', cfg.barColor].join(' ')}
             style={{ width: `${result.score}%` }}
@@ -151,7 +151,7 @@ function TestResultPanel({ result, onDismiss }) {
       {result.issues && result.issues.length > 0 && (
         <ul className="space-y-1.5 pl-1">
           {result.issues.map((issue, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-zinc-300">
               <span className="mt-1 w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0" aria-hidden="true" />
               {issue}
             </li>
@@ -354,7 +354,7 @@ export default function ExerciseDetailPage({ params }) {
   // ─── Not found ────────────────────────────────────────────────────────────
   if (!exercise) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 gap-6 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-zinc-950 gap-6 px-4">
         <div className="p-5 rounded-2xl bg-rose-100 dark:bg-rose-900/30">
           <AlertCircle className="w-10 h-10 text-rose-500" />
         </div>
@@ -362,7 +362,7 @@ export default function ExerciseDetailPage({ params }) {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
             Exercise Not Found
           </h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">
+          <p className="text-slate-500 dark:text-zinc-400 text-sm">
             No exercise with id &ldquo;{id}&rdquo; exists.
           </p>
         </div>
@@ -377,14 +377,14 @@ export default function ExerciseDetailPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col">
       {/* ── Top bar / breadcrumb ─────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700/60 sticky top-0 z-30">
+      <div className="bg-white dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800 sticky top-0 z-30">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
           {/* Back button */}
           <Link
             href="/practice"
-            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shrink-0"
+            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shrink-0"
           >
             <ChevronLeft className="w-4 h-4" />
             Practice
@@ -423,18 +423,18 @@ export default function ExerciseDetailPage({ params }) {
               onClick={() => prevExercise && router.push(`/practice/${prevExercise.id}`)}
               disabled={!prevExercise}
               title={prevExercise ? `Previous: ${prevExercise.title}` : 'No previous exercise'}
-              className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums">
+            <span className="text-xs text-slate-400 dark:text-zinc-500 tabular-nums">
               {exerciseIndex + 1} / {exercises.length}
             </span>
             <button
               onClick={() => nextExercise && router.push(`/practice/${nextExercise.id}`)}
               disabled={!nextExercise}
               title={nextExercise ? `Next: ${nextExercise.title}` : 'No next exercise'}
-              className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -452,7 +452,7 @@ export default function ExerciseDetailPage({ params }) {
           <div className="lg:w-[46%] lg:sticky lg:top-[3.75rem] lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto space-y-5 pb-6">
 
             {/* Exercise title + meta */}
-            <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
+            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={exercise.difficulty} size="md">
@@ -483,14 +483,14 @@ export default function ExerciseDetailPage({ params }) {
               <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
                 {exercise.title}
               </h1>
-              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
                 {exercise.description}
               </p>
             </div>
 
             {/* Schema */}
             {exercise.schema && (
-              <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5">
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
                 <SectionHeading icon={Database}>Schema</SectionHeading>
                 <CodeBlock
                   code={exercise.schema}
@@ -503,7 +503,7 @@ export default function ExerciseDetailPage({ params }) {
 
             {/* Sample data */}
             {exercise.sampleData && (
-              <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5">
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
                 <SectionHeading icon={Database}>Sample Data</SectionHeading>
                 <CodeBlock
                   code={exercise.sampleData}
@@ -514,9 +514,9 @@ export default function ExerciseDetailPage({ params }) {
             )}
 
             {/* Problem statement */}
-            <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5">
+            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
               <SectionHeading icon={FileText}>Problem Statement</SectionHeading>
-              <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+              <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed">
                 {exercise.problemStatement}
               </p>
 
@@ -524,10 +524,10 @@ export default function ExerciseDetailPage({ params }) {
                 <>
                   <Divider />
                   <div className="mt-4">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1.5">
+                    <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
                       Expected Result
                     </p>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                    <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">
                       {exercise.expectedResult}
                     </p>
                   </div>
@@ -567,7 +567,7 @@ export default function ExerciseDetailPage({ params }) {
               {prevExercise ? (
                 <Link
                   href={`/practice/${prevExercise.id}`}
-                  className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
+                  className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
                 >
                   <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                   <span className="truncate">{prevExercise.title}</span>
@@ -579,7 +579,7 @@ export default function ExerciseDetailPage({ params }) {
               {nextExercise ? (
                 <Link
                   href={`/practice/${nextExercise.id}`}
-                  className="flex-1 flex items-center justify-end gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
+                  className="flex-1 flex items-center justify-end gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
                 >
                   <span className="truncate">{nextExercise.title}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -596,12 +596,12 @@ export default function ExerciseDetailPage({ params }) {
           <div className="flex-1 space-y-5 min-w-0">
 
             {/* Code editor card */}
-            <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
               {/* Editor toolbar */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-700/60">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-zinc-800">
                 <div className="flex items-center gap-2">
                   <Code className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
                     Your Solution
                   </span>
                 </div>
@@ -775,7 +775,7 @@ export default function ExerciseDetailPage({ params }) {
 
             {/* ── Solution panel ───────────────────────────────────────── */}
             {showSolution && (
-              <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-indigo-200 dark:border-indigo-800/40 overflow-hidden">
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-indigo-200 dark:border-indigo-800/40 overflow-hidden">
                 <div className="px-5 py-4 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800/40 flex items-center justify-between">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-indigo-300">
                     <Eye className="w-4 h-4" />
@@ -793,7 +793,7 @@ export default function ExerciseDetailPage({ params }) {
                   {/* Primary solution */}
                   {exercise.solution && (
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
                         Primary Solution
                       </p>
                       <CodeBlock
@@ -807,7 +807,7 @@ export default function ExerciseDetailPage({ params }) {
                   {/* Alternative solutions */}
                   {exercise.alternativeSolutions && exercise.alternativeSolutions.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
                         Alternative Approaches
                       </p>
                       <div className="space-y-3">
@@ -844,8 +844,8 @@ export default function ExerciseDetailPage({ params }) {
                       </button>
 
                       {showExplanation && (
-                        <div className="mt-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/60">
-                          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                        <div className="mt-3 p-4 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
+                          <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">
                             {exercise.explanation}
                           </p>
                         </div>
@@ -857,7 +857,7 @@ export default function ExerciseDetailPage({ params }) {
             )}
 
             {/* ── Personal Notes ───────────────────────────────────────── */}
-            <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5">
+            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
               <div className="flex items-center justify-between mb-3">
                 <SectionHeading icon={FileText}>My Notes</SectionHeading>
                 {noteSaved && (
@@ -872,9 +872,9 @@ export default function ExerciseDetailPage({ params }) {
                 onChange={handleNoteChange}
                 placeholder="Jot down your thoughts, things to remember, or personal insights about this exercise…"
                 rows={4}
-                className="w-full resize-none rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-150 leading-relaxed"
+                className="w-full resize-none rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900/60 px-4 py-3 text-sm text-slate-700 dark:text-zinc-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-150 leading-relaxed"
               />
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+              <p className="text-xs text-slate-400 dark:text-zinc-500 mt-2">
                 Notes are saved automatically to your browser.
               </p>
             </div>
@@ -884,7 +884,7 @@ export default function ExerciseDetailPage({ params }) {
               {prevExercise ? (
                 <Link
                   href={`/practice/${prevExercise.id}`}
-                  className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
+                  className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
                 >
                   <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                   <span className="truncate">Prev</span>
@@ -895,7 +895,7 @@ export default function ExerciseDetailPage({ params }) {
               {nextExercise ? (
                 <Link
                   href={`/practice/${nextExercise.id}`}
-                  className="flex-1 flex items-center justify-end gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 text-sm font-medium text-slate-700 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
+                  className="flex-1 flex items-center justify-end gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
                 >
                   <span className="truncate">Next</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

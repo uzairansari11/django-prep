@@ -100,7 +100,7 @@ function Connector({ active, reduced }) {
       <div className="relative flex items-center w-full">
         <div
           className={`h-0.5 flex-1 transition-colors duration-500 ${
-            active ? 'bg-indigo-400 dark:bg-indigo-500' : 'bg-slate-200 dark:bg-slate-700'
+            active ? 'bg-indigo-400 dark:bg-indigo-500' : 'bg-slate-200 dark:bg-zinc-800'
           }`}
           style={
             !reduced && active
@@ -189,12 +189,12 @@ export default function QueryFlowAnimation({
   }, []);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
+    <div className="bg-slate-50 dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-700 p-6 transition-colors duration-200">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Django ORM Query Flow</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Django ORM Query Flow</h3>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             How your Python code becomes a database query
           </p>
         </div>
@@ -230,7 +230,7 @@ export default function QueryFlowAnimation({
                 className={`relative flex flex-col gap-2 w-36 sm:w-44 p-3 rounded-xl border-2 transition-all duration-300 ${
                   isActive
                     ? `${c.bg} ${c.activeBorder} ${isCurrent ? `shadow-lg ${c.glow}` : ''}`
-                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                    : 'bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-700'
                 }`}
               >
                 {/* Pulse ring on current step */}
@@ -246,14 +246,14 @@ export default function QueryFlowAnimation({
                 <div className="flex items-center gap-2">
                   <span
                     className={`flex items-center justify-center w-7 h-7 rounded-lg text-sm shrink-0 ${
-                      isActive ? c.icon : 'bg-slate-100 dark:bg-slate-700'
+                      isActive ? c.icon : 'bg-slate-100 dark:bg-zinc-800'
                     }`}
                   >
                     {step.icon}
                   </span>
                   <span
                     className={`text-xs font-bold leading-tight ${
-                      isActive ? c.label : 'text-slate-400 dark:text-slate-500'
+                      isActive ? c.label : 'text-slate-400 dark:text-zinc-500'
                     }`}
                   >
                     {step.label}
@@ -274,7 +274,7 @@ export default function QueryFlowAnimation({
                       >
                         {step.code}
                       </pre>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">{step.description}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-1">{step.description}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -301,7 +301,7 @@ export default function QueryFlowAnimation({
             className={`w-2 h-2 rounded-full transition-colors duration-300 ${
               activeStep >= i
                 ? `bg-${step.color}-500`
-                : 'bg-slate-200 dark:bg-slate-700'
+                : 'bg-slate-200 dark:bg-zinc-800'
             }`}
           />
         ))}

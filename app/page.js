@@ -140,7 +140,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       {/* ── Hero ────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 dark:from-indigo-900 dark:via-violet-900 dark:to-purple-950">
         {/* Decorative blobs */}
@@ -254,81 +254,81 @@ export default function DashboardPage() {
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Progress Overview</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Your learning journey at a glance</p>
+              <p className="text-sm text-slate-500 dark:text-zinc-400">Your learning journey at a glance</p>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6 space-y-6">
+          <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 space-y-6">
             {/* Models progress */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Badge variant="models" size="sm">Models</Badge>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Django Models</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">Django Models</span>
                 </div>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
                   {modelCompletedCount}/{modelTopics.length}
                 </span>
               </div>
               <ProgressBar value={modelProgress} color="purple" size="md" />
-              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-zinc-400">
                 {modelProgress}% complete — fields, relationships, Meta options and more
               </p>
             </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-700/50" />
+            <div className="border-t border-slate-100 dark:border-zinc-700/50" />
 
             {/* Queries progress */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Badge variant="queries" size="sm">Queries</Badge>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">QuerySet & ORM</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">QuerySet & ORM</span>
                 </div>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
                   {queryCompletedCount}/{queryTopics.length}
                 </span>
               </div>
               <ProgressBar value={queryProgress} color="blue" size="md" />
-              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-zinc-400">
                 {queryProgress}% complete — filter, annotate, aggregate and advanced lookups
               </p>
             </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-700/50" />
+            <div className="border-t border-slate-100 dark:border-zinc-700/50" />
 
             {/* Production progress */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Badge variant="warning" size="sm">Production</Badge>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Production Patterns</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">Production Patterns</span>
                 </div>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
                   {productionCompletedCount}/{productionTopics.length}
                 </span>
               </div>
               <ProgressBar value={productionProgress} color="amber" size="md" />
-              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-zinc-400">
                 {productionProgress}% complete — auth, caching, Celery, security, and deployment
               </p>
             </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-700/50" />
+            <div className="border-t border-slate-100 dark:border-zinc-700/50" />
 
             {/* Exercises progress */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <Badge variant="success" size="sm">Practice</Badge>
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Exercises</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">Exercises</span>
                 </div>
                 <span className="text-sm font-semibold text-slate-900 dark:text-white">
                   {completedExerciseCount}/{totalExercises}
                 </span>
               </div>
               <ProgressBar value={exerciseProgress} color="green" size="md" />
-              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-zinc-400">
                 {exerciseProgress}% solved — beginner to advanced coding challenges
               </p>
             </div>
@@ -347,7 +347,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">Continue Learning</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Pick up where you left off</p>
+                    <p className="text-sm text-slate-500 dark:text-zinc-400">Pick up where you left off</p>
                   </div>
                 </div>
                 <Link
@@ -390,7 +390,7 @@ export default function DashboardPage() {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">Recent Practice</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Latest exercises to try</p>
+                    <p className="text-sm text-slate-500 dark:text-zinc-400">Latest exercises to try</p>
                   </div>
                 </div>
                 <Link
@@ -413,16 +413,16 @@ export default function DashboardPage() {
                       <div className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-150 hover:shadow-md ${
                         done
                           ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/50'
-                          : 'bg-white dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700/60'
+                          : 'bg-white dark:bg-zinc-900/60 border-slate-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700/60'
                       }`}>
                         <div className={`flex items-center justify-center w-10 h-10 rounded-xl shrink-0 ${
                           done
                             ? 'bg-emerald-100 dark:bg-emerald-900/40'
-                            : 'bg-slate-100 dark:bg-slate-700'
+                            : 'bg-slate-100 dark:bg-zinc-800'
                         }`}>
                           {done
                             ? <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                            : <Zap className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                            : <Zap className="w-5 h-5 text-slate-500 dark:text-zinc-400" />
                           }
                         </div>
                         <div className="flex-1 min-w-0">
@@ -434,7 +434,7 @@ export default function DashboardPage() {
                               {ex.difficulty.charAt(0).toUpperCase() + ex.difficulty.slice(1)}
                             </Badge>
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
                             {ex.description}
                           </p>
                         </div>
@@ -481,10 +481,10 @@ export default function DashboardPage() {
               </div>
 
               {weakTopics.length === 0 ? (
-                <div className="text-center py-8 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-center py-8 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800">
                   <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
                   <p className="font-semibold text-slate-900 dark:text-white text-sm">All done!</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">You&apos;ve completed everything.</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">You&apos;ve completed everything.</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -497,9 +497,9 @@ export default function DashboardPage() {
                         : `/learn/queries/${topic.id}`;
                     return (
                       <Link key={topic.id} href={href} className="group block">
-                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-all duration-150">
-                          <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 shrink-0" />
-                          <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-all duration-150">
+                          <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-zinc-700 shrink-0" />
+                          <span className="flex-1 text-sm font-medium text-slate-700 dark:text-zinc-300 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             {topic.title}
                           </span>
                           <Badge variant={topic.difficulty} size="sm">

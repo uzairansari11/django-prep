@@ -108,7 +108,7 @@ export default function ExerciseCard({
       <h3 className={cn(
         'font-semibold text-base leading-snug',
         isCompleted
-          ? 'text-slate-600 dark:text-slate-400 line-through decoration-slate-400/50'
+          ? 'text-slate-600 dark:text-zinc-400 line-through decoration-slate-400/50'
           : 'text-slate-900 dark:text-white'
       )}>
         {title}
@@ -116,7 +116,7 @@ export default function ExerciseCard({
 
       {/* Description */}
       {description && (
-        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+        <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
           {truncate(description, 130)}
         </p>
       )}
@@ -133,7 +133,7 @@ export default function ExerciseCard({
         </div>
 
         {onClick && (
-          <ChevronRight className="w-4 h-4 text-slate-400 dark:text-slate-500 group-hover/card:text-indigo-500 group-hover/card:translate-x-0.5 transition-all duration-150 shrink-0" />
+          <ChevronRight className="w-4 h-4 text-slate-400 dark:text-zinc-500 group-hover/card:text-indigo-500 group-hover/card:translate-x-0.5 transition-all duration-150 shrink-0" />
         )}
       </div>
     </Card>

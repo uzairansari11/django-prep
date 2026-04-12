@@ -64,9 +64,9 @@ export default function LearnPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       {/* Page header */}
-      <div className="bg-white dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/60">
+      <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="flex items-start gap-4">
             <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 dark:bg-indigo-500 shrink-0">
@@ -76,7 +76,7 @@ export default function LearnPage() {
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Learning Center
               </h1>
-              <p className="mt-1.5 text-slate-500 dark:text-slate-400 max-w-xl">
+              <p className="mt-1.5 text-slate-500 dark:text-zinc-400 max-w-xl">
                 Structured lessons on Django Models and the ORM — from foundational concepts to advanced patterns used in production.
               </p>
             </div>
@@ -85,7 +85,7 @@ export default function LearnPage() {
           {/* Overall progress bar */}
           <div className="mt-8 max-w-lg">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span className="font-medium text-slate-700 dark:text-slate-300">Overall completion</span>
+              <span className="font-medium text-slate-700 dark:text-zinc-300">Overall completion</span>
               <span className="font-bold text-indigo-600 dark:text-indigo-400">{totalCompleted}/{totalTopics} topics</span>
             </div>
             <ProgressBar value={overallProgress} color="indigo" size="md" />
@@ -132,7 +132,7 @@ export default function LearnPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Models card */}
             <Link href="/learn/models" className="group block">
-              <div className="h-full bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden hover:border-violet-300 dark:hover:border-violet-700/60 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-200">
+              <div className="h-full bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden hover:border-violet-300 dark:hover:border-violet-700/60 hover:shadow-lg hover:shadow-violet-500/10 transition-all duration-200">
                 {/* Card top gradient strip */}
                 <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-600" />
                 <div className="p-6">
@@ -148,7 +148,7 @@ export default function LearnPage() {
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
                     Django Models
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
+                  <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed mb-5">
                     Learn how Django models map Python classes to database tables. Cover field types, primary keys, relationships (ForeignKey, ManyToMany, OneToOne), Meta options, custom managers, and model methods.
                   </p>
 
@@ -162,7 +162,7 @@ export default function LearnPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400 font-medium">Progress</span>
+                      <span className="text-slate-600 dark:text-zinc-400 font-medium">Progress</span>
                       <span className="font-bold text-violet-600 dark:text-violet-400">
                         {modelCompletedCount}/{modelTopics.length}
                       </span>
@@ -175,7 +175,7 @@ export default function LearnPage() {
 
             {/* Queries card */}
             <Link href="/learn/queries" className="group block">
-              <div className="h-full bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden hover:border-sky-300 dark:hover:border-sky-700/60 hover:shadow-lg hover:shadow-sky-500/10 transition-all duration-200">
+              <div className="h-full bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden hover:border-sky-300 dark:hover:border-sky-700/60 hover:shadow-lg hover:shadow-sky-500/10 transition-all duration-200">
                 <div className="h-2 bg-gradient-to-r from-sky-500 to-blue-600" />
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-4 mb-4">
@@ -190,7 +190,7 @@ export default function LearnPage() {
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-sky-700 dark:group-hover:text-sky-300 transition-colors">
                     QuerySet & ORM
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
+                  <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed mb-5">
                     Master Django&apos;s powerful query API. Learn lazy evaluation, filtering, annotation, aggregation, Q objects, F expressions, select_related, prefetch_related, and raw SQL when needed.
                   </p>
 
@@ -204,7 +204,7 @@ export default function LearnPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400 font-medium">Progress</span>
+                      <span className="text-slate-600 dark:text-zinc-400 font-medium">Progress</span>
                       <span className="font-bold text-sky-600 dark:text-sky-400">
                         {queryCompletedCount}/{queryTopics.length}
                       </span>
@@ -217,7 +217,7 @@ export default function LearnPage() {
 
             {/* Production card */}
             <Link href="/learn/production" className="group block md:col-span-2 lg:col-span-1">
-              <div className="h-full bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden hover:border-amber-300 dark:hover:border-amber-700/60 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-200">
+              <div className="h-full bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden hover:border-amber-300 dark:hover:border-amber-700/60 hover:shadow-lg hover:shadow-amber-500/10 transition-all duration-200">
                 <div className="h-2 bg-gradient-to-r from-amber-500 to-orange-500" />
                 <div className="p-6">
                   <div className="flex items-start justify-between gap-4 mb-4">
@@ -232,7 +232,7 @@ export default function LearnPage() {
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
                     Production Patterns
                   </h3>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-5">
+                  <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed mb-5">
                     From auth to deployment — build Django apps that scale. Covers authentication, caching, Celery tasks, security hardening, structured logging, and performance optimization.
                   </p>
 
@@ -246,7 +246,7 @@ export default function LearnPage() {
 
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400 font-medium">Progress</span>
+                      <span className="text-slate-600 dark:text-zinc-400 font-medium">Progress</span>
                       <span className="font-bold text-amber-600 dark:text-amber-400">
                         {productionCompletedCount}/{productionTopics.length}
                       </span>
@@ -271,10 +271,10 @@ export default function LearnPage() {
             </div>
 
             {recentlyCompleted.length === 0 ? (
-              <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-8 text-center">
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-8 text-center">
                 <Layers className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No topics completed yet</p>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Start with Django Models to get going</p>
+                <p className="text-sm font-medium text-slate-600 dark:text-zinc-400">No topics completed yet</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-1">Start with Django Models to get going</p>
                 <Link
                   href="/learn/models"
                   className="inline-flex items-center gap-1.5 mt-4 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
@@ -293,9 +293,9 @@ export default function LearnPage() {
                       : `/learn/queries/${topic.id}`;
                   return (
                     <Link key={topic.id} href={href} className="group block">
-                      <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800/60 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all duration-150">
+                      <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-900/60 rounded-xl border border-emerald-200/60 dark:border-emerald-800/40 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all duration-150">
                         <CheckCircle className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
-                        <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                        <span className="flex-1 text-sm font-medium text-slate-700 dark:text-zinc-300 truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
                           {topic.title}
                         </span>
                         <Badge
@@ -322,10 +322,10 @@ export default function LearnPage() {
             </div>
 
             {suggestedNext.length === 0 ? (
-              <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-8 text-center">
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-8 text-center">
                 <CheckCircle className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
                 <p className="text-sm font-medium text-slate-900 dark:text-white">All topics complete!</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">You&apos;ve mastered everything. Try the exercises.</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">You&apos;ve mastered everything. Try the exercises.</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -338,11 +338,11 @@ export default function LearnPage() {
                       : `/learn/queries/${topic.id}`;
                   return (
                     <Link key={topic.id} href={href} className="group block">
-                      <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-all duration-150">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-700 text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">
+                      <div className="flex items-center gap-3 px-4 py-3 bg-white dark:bg-zinc-900/60 rounded-xl border border-slate-200 dark:border-zinc-800 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-all duration-150">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-100 dark:bg-zinc-800 text-xs font-bold text-slate-500 dark:text-zinc-400 shrink-0">
                           {idx + 1}
                         </span>
-                        <span className="flex-1 text-sm font-medium text-slate-700 dark:text-slate-300 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <span className="flex-1 text-sm font-medium text-slate-700 dark:text-zinc-300 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                           {topic.title}
                         </span>
                         <Badge variant={topic.difficulty} size="sm">

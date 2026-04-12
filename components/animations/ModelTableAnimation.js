@@ -100,21 +100,21 @@ export default function ModelTableAnimation({ modelName = 'Book', fields = DEFAU
   );
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
+    <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-700 p-6 transition-colors duration-200">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+          <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">
             Model → Database Table
           </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             How a Django model maps to a real database table
           </p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowSQL((v) => !v)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 text-xs font-medium hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors border border-slate-200 dark:border-zinc-700"
           >
             {showSQL ? 'Hide' : 'Show'} SQL CREATE TABLE
           </button>
@@ -131,8 +131,8 @@ export default function ModelTableAnimation({ modelName = 'Book', fields = DEFAU
       {/* Main layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_48px_1fr] gap-4 lg:gap-0 items-start">
         {/* LEFT: Python model */}
-        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-slate-950 border-b border-slate-700">
+        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700">
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-black border-b border-slate-700">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
@@ -197,7 +197,7 @@ export default function ModelTableAnimation({ modelName = 'Book', fields = DEFAU
                 className={`h-0.5 w-full origin-left transition-colors duration-300 ${
                   isFieldActive(i)
                     ? 'bg-indigo-400 dark:bg-indigo-500'
-                    : 'bg-slate-200 dark:bg-slate-700'
+                    : 'bg-slate-200 dark:bg-zinc-800'
                 }`}
               />
               <span
@@ -212,24 +212,24 @@ export default function ModelTableAnimation({ modelName = 'Book', fields = DEFAU
         </div>
 
         {/* RIGHT: Database table */}
-        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700">
           <div className="flex items-center gap-2 px-4 py-2 bg-emerald-700 dark:bg-emerald-900 border-b border-emerald-600 dark:border-emerald-800">
             <span className="text-xs font-mono font-bold text-emerald-100">
               myapp_{modelName.toLowerCase()} table
             </span>
           </div>
-          <div className="overflow-x-auto bg-white dark:bg-slate-800">
+          <div className="overflow-x-auto bg-white dark:bg-zinc-900">
             <table className="w-full text-xs font-mono">
               <thead>
-                <tr className="bg-slate-100 dark:bg-slate-700">
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400 font-semibold">id</th>
+                <tr className="bg-slate-100 dark:bg-zinc-800">
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-zinc-400 font-semibold">id</th>
                   {fields.map((field, i) => (
                     <th
                       key={field.dbColumn}
                       className={`px-3 py-2 text-left font-semibold transition-all duration-200 cursor-pointer ${
                         isFieldActive(i)
                           ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
-                          : 'text-slate-500 dark:text-slate-400'
+                          : 'text-slate-500 dark:text-zinc-400'
                       }`}
                       onMouseEnter={() => setHoveredIndex(i)}
                       onMouseLeave={() => setHoveredIndex(null)}
@@ -243,16 +243,16 @@ export default function ModelTableAnimation({ modelName = 'Book', fields = DEFAU
                 {[0, 1, 2].map((row) => (
                   <tr
                     key={row}
-                    className="border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    className="border-t border-slate-100 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800/50"
                   >
-                    <td className="px-3 py-2 text-slate-400 dark:text-slate-500">{row + 1}</td>
+                    <td className="px-3 py-2 text-slate-400 dark:text-zinc-500">{row + 1}</td>
                     {fields.map((field, i) => (
                       <td
                         key={field.dbColumn}
                         className={`px-3 py-2 transition-all duration-200 ${
                           isFieldActive(i)
                             ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10'
-                            : 'text-slate-600 dark:text-slate-400'
+                            : 'text-slate-600 dark:text-zinc-400'
                         }`}
                         onMouseEnter={() => setHoveredIndex(i)}
                         onMouseLeave={() => setHoveredIndex(null)}
@@ -278,8 +278,8 @@ export default function ModelTableAnimation({ modelName = 'Book', fields = DEFAU
             transition={{ duration: 0.35, ease: 'easeOut' }}
             className="overflow-hidden mt-4"
           >
-            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
-              <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-slate-950 border-b border-slate-700">
+            <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700">
+              <div className="flex items-center gap-2 px-4 py-2 bg-slate-800 dark:bg-black border-b border-slate-700">
                 <span className="text-xs font-mono text-slate-400">SQL CREATE TABLE statement</span>
               </div>
               <pre className="bg-slate-900 p-4 text-xs font-mono text-sky-300 leading-relaxed overflow-x-auto whitespace-pre">

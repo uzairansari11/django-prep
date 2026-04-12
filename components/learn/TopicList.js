@@ -36,13 +36,13 @@ export default function TopicList({
       {/* Overall progress */}
       {topics.length > 0 && (
         <div className="px-1">
-          <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+          <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-zinc-400 mb-2">
             <span>Progress</span>
             <span className="text-indigo-600 dark:text-indigo-400 font-semibold">
               {completedCount}/{topics.length}
             </span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden transition-colors duration-200">
+          <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden transition-colors duration-200">
             <div
               className="h-full rounded-full bg-indigo-500 transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
@@ -57,7 +57,7 @@ export default function TopicList({
           <div key={section} className="mb-4 last:mb-0">
             {/* Section heading */}
             {section && (
-              <p className="px-2 mb-1.5 text-[10px] uppercase tracking-widest font-semibold text-slate-400 dark:text-slate-500">
+              <p className="px-2 mb-1.5 text-[10px] uppercase tracking-widest font-semibold text-slate-400 dark:text-zinc-500">
                 {section}
               </p>
             )}
@@ -77,8 +77,8 @@ export default function TopicList({
                         isCurrent
                           ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-semibold'
                           : isDone
-                            ? 'text-emerald-700 dark:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-800 dark:hover:text-emerald-300 font-medium'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 font-medium'
+                            ? 'text-emerald-700 dark:text-emerald-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-emerald-800 dark:hover:text-emerald-300 font-medium'
+                            : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100 font-medium'
                       )}
                     >
                       {/* Check / circle icon */}
@@ -121,7 +121,7 @@ export default function TopicList({
 
       {/* Empty state */}
       {topics.length === 0 && (
-        <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">
+        <p className="text-sm text-slate-400 dark:text-zinc-500 text-center py-6">
           No topics available.
         </p>
       )}

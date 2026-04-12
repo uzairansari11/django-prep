@@ -31,15 +31,15 @@
 
   /* Dark mode — applied when <html class="dark"> */
   .dark body {
-    background-color: #020617;   /* slate-950 */
-    color: #f1f5f9;              /* slate-100 */
+    background-color: #000000;   /* pure black */
+    color: #f4f4f5;              /* zinc-100 */
   }
 
   /* Borders */
   .dark *,
   .dark *::before,
   .dark *::after {
-    border-color: rgb(30 41 59 / 1); /* slate-800 */
+    border-color: rgb(39 39 42 / 1); /* zinc-800 */
   }
 
   /* Selection */

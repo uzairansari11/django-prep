@@ -107,12 +107,12 @@ export default function ConceptCard({ front = DEFAULT_FRONT, back = DEFAULT_BACK
             WebkitBackfaceVisibility: 'hidden',
             transform: prefersReduced ? 'none' : 'rotateY(180deg)',
           }}
-          className={`absolute inset-0 rounded-2xl border-2 ${colors.border} bg-white dark:bg-slate-800 shadow-lg ${colors.glow} ${prefersReduced && !flipped ? 'hidden' : ''} transition-colors duration-200`}
+          className={`absolute inset-0 rounded-2xl border-2 ${colors.border} bg-white dark:bg-zinc-900 shadow-lg ${colors.glow} ${prefersReduced && !flipped ? 'hidden' : ''} transition-colors duration-200`}
         >
           <div className="h-full flex flex-col p-6 cursor-pointer select-none" onClick={() => setFlipped(false)}>
             {/* Back header */}
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{front.title}</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-zinc-100">{front.title}</span>
               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${colors.badge}`}>
                 Key Facts
               </span>
@@ -122,8 +122,8 @@ export default function ConceptCard({ front = DEFAULT_FRONT, back = DEFAULT_BACK
             {back.facts?.length > 0 && (
               <ul className="space-y-2 mb-4">
                 {back.facts.map((fact, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-slate-300">
-                    <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400 shrink-0 mt-0.5">
+                  <li key={i} className="flex items-start gap-2 text-xs text-slate-700 dark:text-zinc-300">
+                    <span className="w-4 h-4 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-zinc-400 shrink-0 mt-0.5">
                       {i + 1}
                     </span>
                     {fact}
@@ -148,7 +148,7 @@ export default function ConceptCard({ front = DEFAULT_FRONT, back = DEFAULT_BACK
               </div>
             )}
 
-            <div className="mt-3 flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs">
+            <div className="mt-3 flex items-center gap-1.5 text-slate-400 dark:text-zinc-500 text-xs">
               <span>← Tap to flip back</span>
             </div>
           </div>

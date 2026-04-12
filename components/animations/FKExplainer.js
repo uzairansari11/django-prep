@@ -150,11 +150,11 @@ export default function FKExplainer({
   const activeOption = DELETE_OPTIONS.find((o) => o.key === activeDeleteOption);
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
+    <div className="bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-700 p-6 transition-colors duration-200">
       {/* Header */}
       <div className="mb-5">
-        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">ForeignKey Relationships</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+        <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">ForeignKey Relationships</h3>
+        <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
           Click a book row to trace the foreign key. Then try on_delete behaviors.
         </p>
       </div>
@@ -193,18 +193,18 @@ export default function FKExplainer({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Author table */}
-          <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700" style={{ zIndex: 10, position: 'relative' }}>
+          <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700" style={{ zIndex: 10, position: 'relative' }}>
             <div className="bg-violet-600 dark:bg-violet-800 px-4 py-2">
               <span className="text-xs font-bold text-white font-mono">Author table</span>
             </div>
             <table className="w-full text-xs font-mono">
-              <thead className="bg-slate-100 dark:bg-slate-800">
+              <thead className="bg-slate-100 dark:bg-zinc-900">
                 <tr>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">id</th>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">name</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-zinc-400">id</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-zinc-400">name</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-slate-900">
+              <tbody className="bg-white dark:bg-zinc-950">
                 <AnimatePresence>
                   {authorData.map((author) => {
                     const isDeleted = activeDeleteOption === 'CASCADE' && author.id === deletedAuthorId;
@@ -218,7 +218,7 @@ export default function FKExplainer({
                         initial={false}
                         exit={prefersReduced ? {} : { opacity: 0, x: -20, height: 0 }}
                         transition={{ duration: 0.4 }}
-                        className={`border-t border-slate-100 dark:border-slate-800 transition-all duration-200 ${
+                        className={`border-t border-slate-100 dark:border-zinc-800 transition-all duration-200 ${
                           selectedBook?.author_id === author.id
                             ? 'bg-indigo-50 dark:bg-indigo-900/30'
                             : isTarget && activeDeleteOption === 'SET_NULL'
@@ -226,8 +226,8 @@ export default function FKExplainer({
                               : ''
                         }`}
                       >
-                        <td className="px-3 py-2.5 text-slate-400 dark:text-slate-500">{author.id}</td>
-                        <td className="px-3 py-2.5 text-slate-700 dark:text-slate-300 font-medium">{author.name}</td>
+                        <td className="px-3 py-2.5 text-slate-400 dark:text-zinc-500">{author.id}</td>
+                        <td className="px-3 py-2.5 text-slate-700 dark:text-zinc-300 font-medium">{author.name}</td>
                       </motion.tr>
                     );
                   })}
@@ -237,19 +237,19 @@ export default function FKExplainer({
           </div>
 
           {/* Book table */}
-          <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700" style={{ zIndex: 10, position: 'relative' }}>
+          <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-700" style={{ zIndex: 10, position: 'relative' }}>
             <div className="bg-indigo-600 dark:bg-indigo-800 px-4 py-2">
               <span className="text-xs font-bold text-white font-mono">Book table</span>
             </div>
             <table className="w-full text-xs font-mono">
-              <thead className="bg-slate-100 dark:bg-slate-800">
+              <thead className="bg-slate-100 dark:bg-zinc-900">
                 <tr>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">id</th>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">title</th>
-                  <th className="px-3 py-2 text-left text-slate-500 dark:text-slate-400">author_id</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-zinc-400">id</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-zinc-400">title</th>
+                  <th className="px-3 py-2 text-left text-slate-500 dark:text-zinc-400">author_id</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-slate-900">
+              <tbody className="bg-white dark:bg-zinc-950">
                 <AnimatePresence>
                   {bookData.map((book) => {
                     const deleted = isBookDeleted(book);
@@ -270,12 +270,12 @@ export default function FKExplainer({
                           if (activeDeleteOption) return;
                           setSelectedBook(isSelected ? null : book);
                         }}
-                        className={`border-t border-slate-100 dark:border-slate-800 transition-all duration-200 ${
-                          activeDeleteOption ? '' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                        className={`border-t border-slate-100 dark:border-zinc-800 transition-all duration-200 ${
+                          activeDeleteOption ? '' : 'cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-800/40'
                         } ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/30' : ''}`}
                       >
-                        <td className="px-3 py-2.5 text-slate-400 dark:text-slate-500">{book.id}</td>
-                        <td className="px-3 py-2.5 text-slate-700 dark:text-slate-300">{book.title}</td>
+                        <td className="px-3 py-2.5 text-slate-400 dark:text-zinc-500">{book.id}</td>
+                        <td className="px-3 py-2.5 text-slate-700 dark:text-zinc-300">{book.title}</td>
                         <td className="px-3 py-2.5">
                           <motion.span
                             animate={
@@ -289,7 +289,7 @@ export default function FKExplainer({
                                 ? 'text-indigo-600 dark:text-indigo-400'
                                 : isNulled
                                   ? 'text-sky-500 dark:text-sky-400'
-                                  : 'text-slate-600 dark:text-slate-400'
+                                  : 'text-slate-600 dark:text-zinc-400'
                             }`}
                           >
                             {authorIdDisplay === null ? 'NULL' : authorIdDisplay}
@@ -307,7 +307,7 @@ export default function FKExplainer({
 
       {/* on_delete options */}
       <div className="mt-6">
-        <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-3">
+        <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 mb-3">
           Try on_delete behavior — deletes Author #1 (J.K. Rowling):
         </p>
         <div className="flex flex-wrap gap-2 mb-4">
@@ -329,7 +329,7 @@ export default function FKExplainer({
           {activeDeleteOption && (
             <button
               onClick={handleReset}
-              className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="px-4 py-2 rounded-xl border border-slate-200 dark:border-zinc-600 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 text-xs font-medium hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors"
             >
               ↺ Reset
             </button>
@@ -368,10 +368,10 @@ export default function FKExplainer({
               transition={{ duration: 0.3 }}
               className={`p-4 rounded-xl border ${OPTION_COLORS[activeOption.color].highlight}`}
             >
-              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-2">
+              <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200 mb-2">
                 {activeOption.label} behavior applied:
               </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400 mb-3">{activeOption.description}</p>
+              <p className="text-xs text-slate-600 dark:text-zinc-400 mb-3">{activeOption.description}</p>
               <pre className="bg-slate-900 rounded-lg px-3 py-2 text-[10px] font-mono text-emerald-300 overflow-x-auto">
                 {activeOption.code}
               </pre>

@@ -14,7 +14,7 @@ const ACTIVE_MAP = {
   advanced:     'bg-rose-600 text-white shadow-sm shadow-rose-500/30',
 };
 
-const INACTIVE = 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100';
+const INACTIVE = 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100';
 
 /**
  * Filter buttons for exercise difficulty.
@@ -53,7 +53,7 @@ export default function DifficultyFilter({
               'flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-150 border',
               isActive
                 ? [ACTIVE_MAP[value], 'border-transparent']
-                : ['border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800', INACTIVE]
+                : ['border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900', INACTIVE]
             )}
           >
             {dot && (
@@ -69,7 +69,7 @@ export default function DifficultyFilter({
                   'text-xs px-1.5 py-0.5 rounded-md font-semibold leading-none',
                   isActive
                     ? 'bg-white/25 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                    : 'bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300'
                 )}
               >
                 {count}

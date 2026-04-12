@@ -32,16 +32,16 @@ export default function Card({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'rounded-xl bg-white dark:bg-slate-800/60',
-        border && 'border border-slate-200 dark:border-slate-700/60',
+        'rounded-xl bg-white dark:bg-zinc-900/60',
+        border && 'border border-slate-200 dark:border-zinc-800',
         PADDING_MAP[padding] ?? PADDING_MAP.md,
         hover && [
           'transition-all duration-200 cursor-pointer',
-          'hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-black/30',
+          'hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-black/60',
           'hover:-translate-y-0.5',
           'hover:border-indigo-300 dark:hover:border-indigo-700',
         ],
-        onClick && !hover && 'cursor-pointer transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-slate-800',
+        onClick && !hover && 'cursor-pointer transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-zinc-800',
         className
       )}
     >

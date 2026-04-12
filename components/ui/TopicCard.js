@@ -60,7 +60,7 @@ export default function TopicCard({
             </Badge>
           )}
           {estimatedMinutes && (
-            <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-400">
               <Clock className="w-3 h-3" />
               {formatDuration(estimatedMinutes)}
             </span>
@@ -76,7 +76,7 @@ export default function TopicCard({
               onBookmark(topic.id);
             }}
             title={isBookmarked ? 'Remove bookmark' : 'Bookmark topic'}
-            className="shrink-0 p-1 rounded-md text-slate-400 dark:text-slate-500 hover:text-amber-500 dark:hover:text-amber-400 transition-colors duration-150"
+            className="shrink-0 p-1 rounded-md text-slate-400 dark:text-zinc-500 hover:text-amber-500 dark:hover:text-amber-400 transition-colors duration-150"
           >
             {isBookmarked
               ? <BookmarkCheck className="w-4 h-4 text-amber-500 dark:text-amber-400" />
@@ -86,13 +86,13 @@ export default function TopicCard({
       </div>
 
       {/* Title */}
-      <h3 className="font-semibold text-base text-slate-900 dark:text-slate-100 leading-snug">
+      <h3 className="font-semibold text-base text-slate-900 dark:text-zinc-100 leading-snug">
         {title}
       </h3>
 
       {/* Description */}
       {description && (
-        <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed flex-1">
+        <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed flex-1">
           {truncate(description, 110)}
         </p>
       )}
@@ -123,7 +123,7 @@ export default function TopicCard({
             'mt-2 flex items-center gap-2 text-xs font-medium px-3 py-1.5 rounded-lg border transition-all duration-150',
             isCompleted
               ? 'border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40'
-              : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-600 dark:hover:text-emerald-400'
+              : 'border-slate-200 dark:border-zinc-700 text-slate-500 dark:text-zinc-400 bg-white dark:bg-zinc-900 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-600 dark:hover:text-emerald-400'
           )}
         >
           <CheckCircle2 className="w-3.5 h-3.5" />

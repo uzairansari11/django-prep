@@ -1,7 +1,7 @@
 import { cn, getDifficultyColor, getCategoryColor } from '@/lib/utils';
 
 const VARIANT_CLASSES = {
-  default:      'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-600',
+  default:      'bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-600',
   beginner:     null, // handled by getDifficultyColor
   intermediate: null,
   advanced:     null,

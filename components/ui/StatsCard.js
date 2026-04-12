@@ -67,13 +67,13 @@ export default function StatsCard({
   const trendColor =
     trend === 'up'   ? 'text-emerald-600 dark:text-emerald-400' :
     trend === 'down' ? 'text-rose-600 dark:text-rose-400' :
-                       'text-slate-500 dark:text-slate-400';
+                       'text-slate-500 dark:text-zinc-400';
 
   return (
     <div
       className={cn(
-        'rounded-xl border border-slate-200 dark:border-slate-700',
-        'bg-white dark:bg-slate-800',
+        'rounded-xl border border-slate-200 dark:border-zinc-700',
+        'bg-white dark:bg-zinc-900',
         'p-5 flex flex-col gap-4',
         'transition-all duration-200 hover:shadow-md hover:shadow-slate-200/50 dark:hover:shadow-black/20',
         className
@@ -107,11 +107,11 @@ export default function StatsCard({
         <p className={cn('text-3xl font-bold tracking-tight leading-none', colors.value)}>
           {value}
         </p>
-        <p className="mt-1.5 text-sm font-medium text-slate-700 dark:text-slate-300">
+        <p className="mt-1.5 text-sm font-medium text-slate-700 dark:text-zinc-300">
           {title}
         </p>
         {subtitle && (
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-zinc-400">
             {subtitle}
           </p>
         )}

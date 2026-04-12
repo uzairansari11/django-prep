@@ -66,12 +66,12 @@ export default function QueriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       {/* Page header */}
-      <div className="bg-white dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/60">
+      <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-5">
+          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
             <Link
               href="/learn"
               className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -92,7 +92,7 @@ export default function QueriesPage() {
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
                   QuerySet & ORM
                 </h1>
-                <p className="mt-1 text-slate-500 dark:text-slate-400 max-w-lg">
+                <p className="mt-1 text-slate-500 dark:text-zinc-400 max-w-lg">
                   Master Django&apos;s query API — from lazy evaluation and filtering to complex aggregations and raw SQL.
                 </p>
               </div>
@@ -129,7 +129,7 @@ export default function QueriesPage() {
 
         {/* Results meta */}
         <div className="flex items-center justify-between mb-5">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-zinc-400">
             {filtered.length === queryTopics.length
               ? `${queryTopics.length} topics`
               : `${filtered.length} of ${queryTopics.length} topics`}
@@ -142,7 +142,7 @@ export default function QueriesPage() {
           {(search || difficulty !== 'all') && (
             <button
               onClick={() => { setSearch(''); setDifficulty('all'); }}
-              className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+              className="text-xs font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
             >
               Clear filters
             </button>
@@ -151,10 +151,10 @@ export default function QueriesPage() {
 
         {/* Topic Grid */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+          <div className="text-center py-16 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800">
             <BookOpen className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-            <p className="font-semibold text-slate-700 dark:text-slate-300">No topics found</p>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+            <p className="font-semibold text-slate-700 dark:text-zinc-300">No topics found</p>
+            <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
               Try a different search term or difficulty filter.
             </p>
             <button

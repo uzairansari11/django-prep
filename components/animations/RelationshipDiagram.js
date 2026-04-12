@@ -158,7 +158,7 @@ export default function RelationshipDiagram({ models = DEFAULT_MODELS, relations
             className={`flex items-center justify-center h-full rounded-full text-[9px] font-bold px-1.5 border ${
               isHighlighted
                 ? `${colorCfg.badge} border-current`
-                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600'
+                : 'bg-white dark:bg-zinc-900 text-slate-500 dark:text-zinc-400 border-slate-300 dark:border-zinc-600'
             }`}
           >
             {cfg.endMark}
@@ -171,19 +171,19 @@ export default function RelationshipDiagram({ models = DEFAULT_MODELS, relations
   const containerHeight = Math.max(300, models.length > 2 ? 380 : 260);
 
   return (
-    <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-200">
+    <div className="bg-slate-50 dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-700 p-6 transition-colors duration-200">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Model Relationships</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <h3 className="text-base font-bold text-slate-900 dark:text-zinc-100">Model Relationships</h3>
+          <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
             Click a model or relationship line to explore
           </p>
         </div>
         {(selectedModel || selectedRel) && (
           <button
             onClick={() => { setSelectedModel(null); setSelectedRel(null); }}
-            className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 underline transition-colors duration-150"
+            className="text-xs text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-slate-100 underline transition-colors duration-150"
           >
             Clear selection
           </button>
@@ -245,23 +245,23 @@ export default function RelationshipDiagram({ models = DEFAULT_MODELS, relations
                 className={`cursor-pointer rounded-xl border-2 transition-all duration-200 select-none ${
                   highlighted
                     ? 'border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-lg shadow-indigo-100 dark:shadow-indigo-900/40'
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600'
+                    : 'border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >
                 {/* Model box header */}
                 <div className={`px-3 py-2 rounded-t-[10px] border-b ${
                   highlighted
                     ? 'bg-indigo-100 dark:bg-indigo-900/40 border-indigo-200 dark:border-indigo-700/60'
-                    : 'bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600'
+                    : 'bg-slate-100 dark:bg-zinc-800 border-slate-200 dark:border-zinc-600'
                 }`}>
-                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <div className="text-xs font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-1.5">
                     <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
                     {model.name}
                   </div>
                 </div>
                 <div className="px-3 py-2 space-y-0.5">
                   {model.fields.map((field) => (
-                    <div key={field} className="text-[10px] font-mono text-slate-500 dark:text-slate-400 pl-3.5">
+                    <div key={field} className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 pl-3.5">
                       {field}
                     </div>
                   ))}
@@ -297,14 +297,14 @@ export default function RelationshipDiagram({ models = DEFAULT_MODELS, relations
             <div className="flex items-start gap-3">
               <span className="text-xl shrink-0">{REL_CONFIG[selectedRel.type].endMark}</span>
               <div>
-                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                <p className="text-sm font-bold text-slate-900 dark:text-zinc-100">
                   {selectedRel.from} → {selectedRel.to}
                   <span className={`ml-2 text-xs font-medium px-2 py-0.5 rounded-full ${COLOR_CLASS[REL_CONFIG[selectedRel.type].color].badge}`}>
                     {REL_CONFIG[selectedRel.type].label}
                   </span>
                 </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">{selectedRel.label}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">{REL_CONFIG[selectedRel.type].description}</p>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">{selectedRel.label}</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-500 mt-1">{REL_CONFIG[selectedRel.type].description}</p>
               </div>
             </div>
           </motion.div>
@@ -331,12 +331,12 @@ export default function RelationshipDiagram({ models = DEFAULT_MODELS, relations
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${COLOR_CLASS[cfg.color].badge}`}>
                       {cfg.label}
                     </span>
-                    <span className="text-xs text-slate-700 dark:text-slate-300">{selectedModel} {cfg.endMark} {other}</span>
+                    <span className="text-xs text-slate-700 dark:text-zinc-300">{selectedModel} {cfg.endMark} {other}</span>
                   </div>
                 );
               })}
               {getRelationshipsForModel(selectedModel).length === 0 && (
-                <p className="text-xs text-slate-500 dark:text-slate-400">No direct relationships defined</p>
+                <p className="text-xs text-slate-500 dark:text-zinc-400">No direct relationships defined</p>
               )}
             </div>
           </motion.div>

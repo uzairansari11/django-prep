@@ -11,13 +11,13 @@ const COLOR_MAP = {
 };
 
 const TRACK_MAP = {
-  blue:   'bg-slate-200 dark:bg-slate-700',
-  indigo: 'bg-slate-200 dark:bg-slate-700',
-  green:  'bg-slate-200 dark:bg-slate-700',
-  purple: 'bg-slate-200 dark:bg-slate-700',
-  orange: 'bg-slate-200 dark:bg-slate-700',
-  rose:   'bg-slate-200 dark:bg-slate-700',
-  amber:  'bg-slate-200 dark:bg-slate-700',
+  blue:   'bg-slate-200 dark:bg-zinc-800',
+  indigo: 'bg-slate-200 dark:bg-zinc-800',
+  green:  'bg-slate-200 dark:bg-zinc-800',
+  purple: 'bg-slate-200 dark:bg-zinc-800',
+  orange: 'bg-slate-200 dark:bg-zinc-800',
+  rose:   'bg-slate-200 dark:bg-zinc-800',
+  amber:  'bg-slate-200 dark:bg-zinc-800',
 };
 
 const SIZE_MAP = {
@@ -55,10 +55,10 @@ export default function ProgressBar({
     <div className={cn('w-full', className)}>
       {showLabel && (
         <div className="flex justify-between items-center mb-1.5">
-          <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+          <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">
             {displayLabel}
           </span>
-          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
             {pct}%
           </span>
         </div>

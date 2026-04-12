@@ -55,7 +55,7 @@ function TextContent({ text }) {
   return (
     <div className="space-y-3">
       {paragraphs.map((para, i) => (
-        <p key={i} className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm">
+        <p key={i} className="text-slate-700 dark:text-zinc-300 leading-relaxed text-sm">
           {para}
         </p>
       ))}
@@ -127,15 +127,15 @@ export default function ProductionTopicPage({ params }) {
   // 404 state
   if (!topic) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-8">
+      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
           <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-900/40 mx-auto mb-5">
             <AlertTriangle className="w-8 h-8 text-rose-600 dark:text-rose-400" />
           </div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Topic not found</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
+          <p className="text-slate-500 dark:text-zinc-400 mb-6 text-sm">
             The topic{' '}
-            <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 font-mono text-xs">
+            <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-900 font-mono text-xs">
               {topicId}
             </code>{' '}
             does not exist in our production curriculum.
@@ -170,10 +170,10 @@ export default function ProductionTopicPage({ params }) {
   const productionProgress = Math.round((productionCompletedCount / productionTopics.length) * 100);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+        <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-6">
           <Link href="/learn" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
             Learn
           </Link>
@@ -182,14 +182,14 @@ export default function ProductionTopicPage({ params }) {
             Production Patterns
           </Link>
           <span>/</span>
-          <span className="text-slate-700 dark:text-slate-300 font-medium truncate max-w-48">
+          <span className="text-slate-700 dark:text-zinc-300 font-medium truncate max-w-48">
             {topic.title}
           </span>
         </nav>
 
         <div className="flex gap-8 items-start">
           {/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */}
-          <aside className="hidden lg:flex flex-col w-72 shrink-0 sticky top-6 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4">
+          <aside className="hidden lg:flex flex-col w-72 shrink-0 sticky top-6 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4">
             <div className="flex items-center gap-2 mb-1 px-1">
               <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span className="font-bold text-slate-900 dark:text-white text-sm">Production Patterns</span>
@@ -197,13 +197,13 @@ export default function ProductionTopicPage({ params }) {
 
             {/* Overall production progress */}
             <div className="px-1 mb-4">
-              <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">
+              <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1.5">
                 <span>Overall progress</span>
                 <span className="text-amber-600 dark:text-amber-400 font-semibold">
                   {productionCompletedCount}/{productionTopics.length}
                 </span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+              <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-amber-500 transition-all duration-700 ease-out"
                   style={{ width: `${productionProgress}%` }}
@@ -222,7 +222,7 @@ export default function ProductionTopicPage({ params }) {
           {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
           <main className="flex-1 min-w-0 space-y-6">
             {/* Topic header card */}
-            <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
+            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -230,7 +230,7 @@ export default function ProductionTopicPage({ params }) {
                       {topic.difficulty.charAt(0).toUpperCase() + topic.difficulty.slice(1)}
                     </Badge>
                     {topic.estimatedMinutes && (
-                      <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded-lg">
+                      <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
                         <Clock className="w-3.5 h-3.5" />
                         {topic.estimatedMinutes} min
                       </span>
@@ -243,7 +243,7 @@ export default function ProductionTopicPage({ params }) {
                   </h1>
 
                   {topic.description && (
-                    <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-2xl">
+                    <p className="text-slate-500 dark:text-zinc-400 text-sm leading-relaxed max-w-2xl">
                       {topic.description}
                     </p>
                   )}
@@ -267,7 +267,7 @@ export default function ProductionTopicPage({ params }) {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-all duration-150 ${
                       bookmarked
                         ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400'
-                        : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600'
+                        : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600'
                     }`}
                   >
                     {bookmarked ? (
@@ -285,7 +285,7 @@ export default function ProductionTopicPage({ params }) {
                     className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-semibold transition-all duration-150 ${
                       isComplete
                         ? 'bg-emerald-600 dark:bg-emerald-700 border-emerald-600 dark:border-emerald-700 text-white hover:bg-emerald-700 dark:hover:bg-emerald-800'
-                        : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-700 dark:hover:text-emerald-400'
+                        : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-700 dark:hover:text-emerald-400'
                     }`}
                   >
                     <CheckCircle className="w-4 h-4" />
@@ -297,7 +297,7 @@ export default function ProductionTopicPage({ params }) {
 
             {/* ── 1. Explanation ────────────────────────────────────────────── */}
             {content.explanation && (
-              <section className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
+              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
                 <SectionHeading icon={BookOpen} className="text-amber-600 dark:text-amber-400">
                   What it is
                 </SectionHeading>
@@ -307,7 +307,7 @@ export default function ProductionTopicPage({ params }) {
 
             {/* ── 2. Real World Example ─────────────────────────────────────── */}
             {content.realExample && (
-              <section className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
+              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
                 <SectionHeading icon={Lightbulb} className="text-amber-600 dark:text-amber-400">
                   Real World Example
                 </SectionHeading>
@@ -332,8 +332,8 @@ export default function ProductionTopicPage({ params }) {
 
             {/* ── 4. Understanding the Output ───────────────────────────────── */}
             {content.outputExplanation && (
-              <section className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
-                <SectionHeading icon={BookOpen} className="text-slate-700 dark:text-slate-300">
+              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
+                <SectionHeading icon={BookOpen} className="text-slate-700 dark:text-zinc-300">
                   Understanding the Output
                 </SectionHeading>
                 <TextContent text={content.outputExplanation} />
@@ -342,7 +342,7 @@ export default function ProductionTopicPage({ params }) {
 
             {/* ── 5. Common Mistakes ────────────────────────────────────────── */}
             {content.commonMistakes?.length > 0 && (
-              <section className="bg-white dark:bg-slate-800/60 rounded-2xl border border-rose-200/60 dark:border-rose-800/40 p-6">
+              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-rose-200/60 dark:border-rose-800/40 p-6">
                 <SectionHeading icon={AlertTriangle} className="text-rose-600 dark:text-rose-400">
                   Common Mistakes
                 </SectionHeading>
@@ -352,7 +352,7 @@ export default function ProductionTopicPage({ params }) {
                       <span className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 text-xs font-bold shrink-0 mt-0.5">
                         {i + 1}
                       </span>
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                      <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">
                         {mistake}
                       </p>
                     </li>
@@ -408,7 +408,7 @@ export default function ProductionTopicPage({ params }) {
 
             {/* ── 10. Related Topics (new) ──────────────────────────────────── */}
             {relatedTopics.length > 0 && (
-              <section className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
+              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
                 <div className="flex items-center gap-2.5 mb-4">
                   <Flame className="w-5 h-5 text-amber-500 shrink-0" />
                   <h2 className="text-lg font-bold text-slate-900 dark:text-white">Related Topics</h2>
@@ -420,7 +420,7 @@ export default function ProductionTopicPage({ params }) {
                       href={`/learn/production/${related.id}`}
                       className="group block"
                     >
-                      <div className="flex flex-col gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-700/60 bg-slate-50 dark:bg-slate-900/40 hover:border-amber-300 dark:hover:border-amber-700/60 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all duration-150">
+                      <div className="flex flex-col gap-2 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-700/60 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all duration-150">
                         <p className="text-sm font-semibold text-slate-900 dark:text-white leading-snug group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors line-clamp-2">
                           {related.title}
                         </p>
@@ -435,17 +435,17 @@ export default function ProductionTopicPage({ params }) {
             )}
 
             {/* ── 11. User Notes ────────────────────────────────────────────── */}
-            <section className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-6">
+            <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">My Notes</h2>
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 placeholder="Jot down anything you want to remember about this topic…"
                 rows={5}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 dark:focus:border-amber-600 resize-none transition-all duration-150 font-sans"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 dark:focus:border-amber-600 resize-none transition-all duration-150 font-sans"
               />
               <div className="flex items-center justify-between mt-3">
-                <span className="text-xs text-slate-400 dark:text-slate-500">
+                <span className="text-xs text-slate-400 dark:text-zinc-500">
                   Notes are saved locally in your browser
                 </span>
                 <button
@@ -466,9 +466,9 @@ export default function ProductionTopicPage({ params }) {
               {prevTopic ? (
                 <Link
                   href={`/learn/production/${prevTopic.id}`}
-                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/60 hover:border-amber-300 dark:hover:border-amber-700/60 transition-all duration-150"
+                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-700/60 transition-all duration-150"
                 >
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 group-hover:text-amber-500 transition-colors">
+                  <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">
                     <ChevronLeft className="w-3.5 h-3.5" />
                     Previous
                   </span>
@@ -483,9 +483,9 @@ export default function ProductionTopicPage({ params }) {
               {nextTopic ? (
                 <Link
                   href={`/learn/production/${nextTopic.id}`}
-                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-white dark:bg-slate-800/60 hover:border-amber-300 dark:hover:border-amber-700/60 transition-all duration-150 text-right"
+                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-700/60 transition-all duration-150 text-right"
                 >
-                  <span className="flex items-center justify-end gap-1.5 text-xs text-slate-500 dark:text-slate-400 group-hover:text-amber-500 transition-colors">
+                  <span className="flex items-center justify-end gap-1.5 text-xs text-slate-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">
                     Next
                     <ChevronRight className="w-3.5 h-3.5" />
                   </span>

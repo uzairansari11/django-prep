@@ -50,14 +50,14 @@ export default function RootLayout({ children }) {
         {/* Blocking script — must run before first paint to prevent FOUC */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased transition-colors duration-200">
+      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 antialiased transition-colors duration-200">
         <ThemeProvider>
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <main className="flex-1">
               {children}
             </main>
-            <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            <footer className="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 py-6 text-center text-sm text-slate-500 dark:text-zinc-400">
               <p>Django ORM Master &mdash; Built for developers who want to level up.</p>
             </footer>
           </div>

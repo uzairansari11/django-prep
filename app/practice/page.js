@@ -106,12 +106,12 @@ export default function PracticePage() {
   }, [category, searchQuery, topic])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
       {/* ── Hero / Header ──────────────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700/60">
+      <div className="bg-white dark:bg-zinc-900/60 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 mb-6">
+          <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-6">
             <Link
               href="/"
               className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -132,16 +132,16 @@ export default function PracticePage() {
                   Practice Exercises
                 </h1>
               </div>
-              <p className="text-slate-500 dark:text-slate-400 text-base max-w-2xl">
+              <p className="text-slate-500 dark:text-zinc-400 text-base max-w-2xl">
                 Sharpen your Django ORM skills with hands-on exercises. Write real queries,
                 reveal hints one by one, and check the solution when you&apos;re ready.
               </p>
             </div>
 
             {/* Overall progress pill */}
-            <div className="lg:shrink-0 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4 min-w-[220px]">
+            <div className="lg:shrink-0 bg-slate-50 dark:bg-zinc-950/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4 min-w-[220px]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                <span className="text-sm font-medium text-slate-600 dark:text-zinc-400">
                   Overall Progress
                 </span>
                 <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
@@ -149,7 +149,7 @@ export default function PracticePage() {
                 </span>
               </div>
               <ProgressBar value={completionPct} color="indigo" size="md" />
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-2">
                 {totalCompleted} of {totalExercises} completed
               </p>
             </div>
@@ -189,7 +189,7 @@ export default function PracticePage() {
             ].map(({ label, value, icon: Icon, color, bg }) => (
               <div
                 key={label}
-                className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60"
+                className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800"
               >
                 <div className={`p-2 rounded-lg ${bg}`}>
                   <Icon className={`w-4 h-4 ${color}`} />
@@ -198,7 +198,7 @@ export default function PracticePage() {
                   <p className="text-xl font-bold text-slate-900 dark:text-white leading-none">
                     {value}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{label}</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">{label}</p>
                 </div>
               </div>
             ))}
@@ -209,7 +209,7 @@ export default function PracticePage() {
       {/* ── Filters + Grid ────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filter panel */}
-        <div className="bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-5 mb-8 space-y-5">
+        <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5 mb-8 space-y-5">
           {/* Row 1: search + topic dropdown */}
           <div className="flex flex-col sm:flex-row gap-3">
             <SearchBar
@@ -225,7 +225,7 @@ export default function PracticePage() {
               <select
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
-                className="text-sm bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-2 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-150"
+                className="text-sm bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-600 rounded-xl px-3 py-2 text-slate-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-150"
                 aria-label="Filter by topic"
               >
                 {ALL_TOPICS.map((t) => (
@@ -264,7 +264,7 @@ export default function PracticePage() {
                         : cat === 'models'
                         ? 'bg-violet-600 text-white border-transparent shadow-sm shadow-violet-500/30'
                         : 'bg-blue-600 text-white border-transparent shadow-sm shadow-blue-500/30'
-                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100',
+                      : 'border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 hover:text-slate-900 dark:hover:text-slate-100',
                   ].join(' ')}
                 >
                   {cat === 'all' ? 'All Categories' : cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -276,7 +276,7 @@ export default function PracticePage() {
 
         {/* Result count */}
         <div className="flex items-center justify-between mb-5">
-          <p className="text-sm text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 dark:text-zinc-400">
             Showing{' '}
             <span className="font-semibold text-slate-900 dark:text-white">
               {filtered.length}
@@ -326,13 +326,13 @@ export default function PracticePage() {
         ) : (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="p-5 rounded-2xl bg-slate-100 dark:bg-slate-800 mb-5">
-              <BookOpen className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+            <div className="p-5 rounded-2xl bg-slate-100 dark:bg-zinc-900 mb-5">
+              <BookOpen className="w-10 h-10 text-slate-400 dark:text-zinc-500" />
             </div>
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-zinc-200 mb-2">
               No exercises found
             </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm">
+            <p className="text-sm text-slate-500 dark:text-zinc-400 max-w-sm">
               Try adjusting your filters or search query to find what you&apos;re looking for.
             </p>
             <button
