@@ -66,12 +66,12 @@ export default function QueriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
       {/* Page header */}
       <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
             <Link
               href="/learn"
               className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
@@ -84,7 +84,7 @@ export default function QueriesPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-wrap items-start gap-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-sky-600 dark:bg-sky-500 shrink-0">
                 <Search className="w-6 h-6 text-white" />
               </div>

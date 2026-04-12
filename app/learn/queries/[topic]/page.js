@@ -116,10 +116,10 @@ export default function QueryTopicPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-6">
+        <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-4">
           <Link href="/learn" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
             Learn
           </Link>
@@ -128,8 +128,22 @@ export default function QueryTopicPage({ params }) {
             QuerySet & ORM
           </Link>
           <span>/</span>
-          <span className="text-slate-700 dark:text-zinc-300 font-medium truncate max-w-48">{topic.title}</span>
+          <span className="text-slate-700 dark:text-zinc-300 font-medium truncate max-w-[12rem]">{topic.title}</span>
         </nav>
+
+        {/* Mobile topic picker — visible only below lg */}
+        <div className="lg:hidden mb-5">
+          <select
+            value={topicId}
+            onChange={(e) => router.push(`/learn/queries/${e.target.value}`)}
+            className="w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-slate-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-sky-500/40 transition-all duration-150"
+            aria-label="Navigate to topic"
+          >
+            {queryTopics.map((t) => (
+              <option key={t.id} value={t.id}>{t.title}</option>
+            ))}
+          </select>
+        </div>
 
         <div className="flex gap-8 items-start">
           {/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */}
@@ -392,7 +406,7 @@ export default function QueryTopicPage({ params }) {
             </AnimatedConceptSection>
 
             {/* ── Prev / Next navigation ────────────────────────────────── */}
-            <div className="grid grid-cols-2 gap-4 pb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
               {prevTopic ? (
                 <Link
                   href={`/learn/queries/${prevTopic.id}`}

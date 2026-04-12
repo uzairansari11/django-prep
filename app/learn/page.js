@@ -64,11 +64,11 @@ export default function LearnPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
       {/* Page header */}
       <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <div className="flex items-start gap-4">
+          <div className="flex flex-wrap items-start gap-4">
             <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600 dark:bg-indigo-500 shrink-0">
               <BookOpen className="w-6 h-6 text-white" />
             </div>

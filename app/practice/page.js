@@ -106,7 +106,7 @@ export default function PracticePage() {
   }, [category, searchQuery, topic])
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
       {/* ── Hero / Header ──────────────────────────────────────────────────── */}
       <div className="bg-white dark:bg-zinc-900/60 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -139,7 +139,7 @@ export default function PracticePage() {
             </div>
 
             {/* Overall progress pill */}
-            <div className="lg:shrink-0 bg-slate-50 dark:bg-zinc-950/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4 min-w-[220px]">
+            <div className="w-full lg:w-auto lg:shrink-0 bg-slate-50 dark:bg-zinc-950/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4 sm:min-w-[220px]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-slate-600 dark:text-zinc-400">
                   Overall Progress

@@ -121,12 +121,12 @@ export default function ProductionPage() {
   const hasActiveFilters = search || difficulty !== 'all' || activeSubcategory !== 'all';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
       {/* Page header */}
       <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
             <Link
               href="/learn"
               className="flex items-center gap-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
@@ -294,7 +294,7 @@ export default function ProductionPage() {
           </div>
 
           {/* Right sidebar — subcategory progress */}
-          <aside className="hidden xl:block w-64 shrink-0">
+          <aside className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-6 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4">
               <div className="flex items-center gap-2 mb-4">
                 <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />

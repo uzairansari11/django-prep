@@ -67,12 +67,12 @@ export default function ModelsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
       {/* Page header */}
       <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
             <Link
               href="/learn"
               className="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
