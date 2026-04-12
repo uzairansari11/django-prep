@@ -377,10 +377,10 @@ export default function ExerciseDetailPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col overflow-x-hidden">
       {/* ── Top bar / breadcrumb ─────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800 sticky top-0 z-30">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3">
+      <div className="bg-white dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800 sticky top-0 z-30 overflow-x-hidden">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 min-w-0">
           {/* Back button */}
           <Link
             href="/practice"
@@ -443,13 +443,13 @@ export default function ExerciseDetailPage({ params }) {
       </div>
 
       {/* ── Two-column layout ────────────────────────────────────────────── */}
-      <div className="flex-1 max-w-screen-2xl mx-auto w-full px-4 sm:px-6 py-6">
-        <div className="flex flex-col lg:flex-row gap-6 lg:items-start">
+      <div className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 min-w-0">
+        <div className="flex flex-col lg:flex-row gap-6 lg:items-start min-w-0">
 
           {/* ═══════════════════════════════════════════════════════════════
               LEFT PANEL — Problem description
           ═══════════════════════════════════════════════════════════════ */}
-          <div className="lg:w-[46%] lg:sticky lg:top-[3.75rem] lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto space-y-5 pb-6">
+          <div className="w-full lg:w-[420px] lg:shrink-0 min-w-0 lg:sticky lg:top-[3.75rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto space-y-5 pb-6">
 
             {/* Exercise title + meta */}
             <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
@@ -593,7 +593,7 @@ export default function ExerciseDetailPage({ params }) {
           {/* ═══════════════════════════════════════════════════════════════
               RIGHT PANEL — Code editor + hints + solution
           ═══════════════════════════════════════════════════════════════ */}
-          <div className="flex-1 space-y-5 min-w-0">
+          <div className="flex-1 min-w-0 space-y-5">
 
             {/* Code editor card */}
             <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
