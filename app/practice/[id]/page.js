@@ -237,6 +237,9 @@ export default function ExerciseDetailPage({ params }) {
   const [showExplanation, setShowExplanation] = useState(false)
   const [noteText, setNoteText] = useState('')
   const [noteSaved, setNoteSaved] = useState(false)
+  const [schemaOpen, setSchemaOpen] = useState(true)
+  const [sampleDataOpen, setSampleDataOpen] = useState(true)
+  const [activeSolutionTab, setActiveSolutionTab] = useState('primary')
 
   // Submit & Test state
   const [testResult, setTestResult] = useState(null)
@@ -261,6 +264,9 @@ export default function ExerciseDetailPage({ params }) {
     setShowSolution(false)
     setShowExplanation(false)
     setNoteSaved(false)
+    setSchemaOpen(true)
+    setSampleDataOpen(true)
+    setActiveSolutionTab('primary')
     // Reset submit state
     setTestResult(null)
     setIsRunning(false)
@@ -490,26 +496,54 @@ export default function ExerciseDetailPage({ params }) {
 
             {/* Schema */}
             {exercise.schema && (
-              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
-                <SectionHeading icon={Database}>Schema</SectionHeading>
-                <CodeBlock
-                  code={exercise.schema}
-                  language="python"
-                  title="models.py"
-                  showLineNumbers
-                />
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
+                <button
+                  onClick={() => setSchemaOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors"
+                  aria-expanded={schemaOpen}
+                >
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-wide">
+                    <Database className="w-4 h-4 text-slate-400 dark:text-zinc-500" aria-hidden="true" />
+                    Schema
+                  </h3>
+                  <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${schemaOpen ? 'rotate-90' : ''}`} aria-hidden="true" />
+                </button>
+                {schemaOpen && (
+                  <div className="px-5 pb-5">
+                    <CodeBlock
+                      code={exercise.schema}
+                      language="python"
+                      title="models.py"
+                      showLineNumbers
+                    />
+                  </div>
+                )}
               </div>
             )}
 
             {/* Sample data */}
             {exercise.sampleData && (
-              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
-                <SectionHeading icon={Database}>Sample Data</SectionHeading>
-                <CodeBlock
-                  code={exercise.sampleData}
-                  language="python"
-                  title="seed data"
-                />
+              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
+                <button
+                  onClick={() => setSampleDataOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors"
+                  aria-expanded={sampleDataOpen}
+                >
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-wide">
+                    <Database className="w-4 h-4 text-slate-400 dark:text-zinc-500" aria-hidden="true" />
+                    Sample Data
+                  </h3>
+                  <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${sampleDataOpen ? 'rotate-90' : ''}`} aria-hidden="true" />
+                </button>
+                {sampleDataOpen && (
+                  <div className="px-5 pb-5">
+                    <CodeBlock
+                      code={exercise.sampleData}
+                      language="python"
+                      title="seed data"
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -637,8 +671,8 @@ export default function ExerciseDetailPage({ params }) {
                 }}
               />
 
-              {/* Keyboard hint */}
-              <div className="px-5 py-1.5 bg-[#0d1117] border-t border-slate-700/30">
+              {/* Keyboard hint + line count */}
+              <div className="px-5 py-1.5 bg-[#0d1117] border-t border-slate-700/30 flex items-center justify-between">
                 <p className="text-xs text-slate-500 select-none">
                   Press{' '}
                   <kbd className="px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-400 font-mono text-[10px] border border-slate-600/50">
@@ -650,6 +684,11 @@ export default function ExerciseDetailPage({ params }) {
                   </kbd>
                   {' '}to run tests
                 </p>
+                {userCode && (
+                  <p className="text-xs text-slate-600 select-none tabular-nums">
+                    {userCode.split('\n').length} lines · {userCode.length} chars
+                  </p>
+                )}
               </div>
 
               {/* Action row */}
@@ -731,116 +770,114 @@ export default function ExerciseDetailPage({ params }) {
 
             {/* ── Hints panel ──────────────────────────────────────────── */}
             {showHints && hints.length > 0 && (
-              <div className="bg-amber-50 dark:bg-amber-900/10 rounded-2xl border border-amber-200 dark:border-amber-800/40 p-5">
-                <div className="flex items-center justify-between mb-4">
+              <div className="rounded-2xl border border-amber-200 dark:border-amber-800/40 overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-800 dark:text-amber-300">
                     <Lightbulb className="w-4 h-4" />
-                    Hints ({hintsRevealed} of {hints.length} revealed)
+                    Hints
+                    <span className="px-1.5 py-0.5 rounded-md bg-amber-200/70 dark:bg-amber-800/50 text-xs font-bold text-amber-700 dark:text-amber-300">
+                      {hintsRevealed}/{hints.length}
+                    </span>
                   </h3>
                   <button
-                    onClick={() => {
-                      setShowHints(false)
-                      setCurrentHintIndex(0)
-                    }}
-                    className="text-xs text-amber-600 dark:text-amber-400 hover:underline"
+                    onClick={() => { setShowHints(false); setCurrentHintIndex(0) }}
+                    className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium"
                   >
                     Hide
                   </button>
                 </div>
 
-                <ol className="space-y-3">
-                  {hints.slice(0, hintsRevealed).map((hint, i) => (
-                    <li
-                      key={i}
-                      className="flex gap-3 text-sm text-amber-800 dark:text-amber-200 leading-relaxed"
-                    >
-                      <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-200 dark:bg-amber-800/60 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-amber-300">
-                        {i + 1}
-                      </span>
-                      {hint}
-                    </li>
-                  ))}
-                </ol>
+                <div className="p-5 bg-amber-50/50 dark:bg-amber-900/10 space-y-3">
+                  <ol className="space-y-3">
+                    {hints.slice(0, hintsRevealed).map((hint, i) => (
+                      <li key={i} className="flex gap-3 text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-200 dark:bg-amber-800/60 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-amber-300 mt-0.5">
+                          {i + 1}
+                        </span>
+                        {hint}
+                      </li>
+                    ))}
+                  </ol>
 
-                {hintsRevealed < hints.length && (
-                  <button
-                    onClick={handleShowNextHint}
-                    className="mt-4 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline"
-                  >
-                    Reveal next hint ({hintsRevealed + 1} of {hints.length})
-                  </button>
-                )}
+                  {hintsRevealed < hints.length && (
+                    <button
+                      onClick={handleShowNextHint}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline mt-1"
+                    >
+                      <Lightbulb className="w-3.5 h-3.5" />
+                      Reveal hint {hintsRevealed + 1} of {hints.length}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
             {/* ── Solution panel ───────────────────────────────────────── */}
             {showSolution && (
               <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-indigo-200 dark:border-indigo-800/40 overflow-hidden">
-                <div className="px-5 py-4 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800/40 flex items-center justify-between">
+                {/* Header */}
+                <div className="px-5 py-3.5 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800/40 flex items-center justify-between">
                   <h3 className="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-indigo-300">
                     <Eye className="w-4 h-4" />
                     Solution
                   </h3>
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-3.5 h-3.5 text-indigo-500" />
-                    <span className="text-xs text-indigo-600 dark:text-indigo-400">
-                      Try it yourself first!
-                    </span>
+                  <div className="flex items-center gap-1.5 text-xs text-indigo-500 dark:text-indigo-400">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Try it yourself first!
                   </div>
                 </div>
 
-                <div className="p-5 space-y-5">
+                {/* Tabs — only show if alternatives exist */}
+                {exercise.alternativeSolutions && exercise.alternativeSolutions.length > 0 && (
+                  <div className="flex border-b border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-900/10 px-5 gap-1 pt-2">
+                    {['primary', ...exercise.alternativeSolutions.map((_, i) => `alt-${i}`)].map((tab, i) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveSolutionTab(tab)}
+                        className={[
+                          'px-3 py-1.5 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition-colors',
+                          activeSolutionTab === tab
+                            ? 'border-indigo-500 text-indigo-700 dark:text-indigo-300 bg-white dark:bg-zinc-900/60'
+                            : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400',
+                        ].join(' ')}
+                      >
+                        {tab === 'primary' ? 'Primary' : `Alt ${i}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="p-5 space-y-4">
                   {/* Primary solution */}
-                  {exercise.solution && (
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
-                        Primary Solution
-                      </p>
-                      <CodeBlock
-                        code={exercise.solution}
-                        language="python"
-                        title="solution.py"
-                      />
-                    </div>
+                  {exercise.solution && (activeSolutionTab === 'primary' || !exercise.alternativeSolutions?.length) && (
+                    <CodeBlock
+                      code={exercise.solution}
+                      language="python"
+                      title="solution.py"
+                    />
                   )}
 
                   {/* Alternative solutions */}
-                  {exercise.alternativeSolutions && exercise.alternativeSolutions.length > 0 && (
-                    <div>
-                      <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
-                        Alternative Approaches
-                      </p>
-                      <div className="space-y-3">
-                        {exercise.alternativeSolutions.map((alt, i) => (
-                          <CodeBlock
-                            key={i}
-                            code={alt}
-                            language="python"
-                            title={`alternative-${i + 1}.py`}
-                          />
-                        ))}
-                      </div>
-                    </div>
+                  {exercise.alternativeSolutions && exercise.alternativeSolutions.map((alt, i) =>
+                    activeSolutionTab === `alt-${i}` ? (
+                      <CodeBlock
+                        key={i}
+                        code={alt}
+                        language="python"
+                        title={`alternative-${i + 1}.py`}
+                      />
+                    ) : null
                   )}
 
                   {/* Explanation toggle */}
                   {exercise.explanation && (
-                    <div>
+                    <div className="border-t border-slate-100 dark:border-zinc-800 pt-3">
                       <button
                         onClick={() => setShowExplanation((v) => !v)}
                         className="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                       >
-                        {showExplanation ? (
-                          <>
-                            <EyeOff className="w-4 h-4" />
-                            Hide Explanation
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="w-4 h-4" />
-                            Show Explanation
-                          </>
-                        )}
+                        <Eye className="w-4 h-4" />
+                        {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
                       </button>
 
                       {showExplanation && (
@@ -874,9 +911,16 @@ export default function ExerciseDetailPage({ params }) {
                 rows={4}
                 className="w-full resize-none rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900/60 px-4 py-3 text-sm text-slate-700 dark:text-zinc-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-150 leading-relaxed"
               />
-              <p className="text-xs text-slate-400 dark:text-zinc-500 mt-2">
-                Notes are saved automatically to your browser.
-              </p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-xs text-slate-400 dark:text-zinc-500">
+                  Notes are saved automatically to your browser.
+                </p>
+                {noteText && (
+                  <p className="text-xs text-slate-400 dark:text-zinc-600 tabular-nums">
+                    {noteText.length} chars
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* ── Bottom nav (mobile-friendly duplicate) ───────────────── */}
