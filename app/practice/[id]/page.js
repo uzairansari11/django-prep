@@ -619,7 +619,7 @@ export default function ExerciseDetailPage({ params }) {
                 value={userCode}
                 onChange={(e) => setUserCode(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={`# Write your Django ORM query here\n# e.g.: ${exercise.solution ?? 'Model.objects.all()'}`}
+
                 spellCheck={false}
                 autoComplete="off"
                 autoCorrect="off"
