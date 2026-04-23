@@ -14,16 +14,14 @@ import {
   Lightbulb,
   XCircle,
   Clock,
+  Layers,
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import CodeBlock from '@/components/ui/CodeBlock';
 import Badge from '@/components/ui/Badge';
 import TopicList from '@/components/learn/TopicList';
-import { queryTopics } from '@/data/query-topics';
+import { djangoInternalsTopics } from '@/data/django-internals-topics';
 import AnimatedConceptSection from '@/components/learn/AnimatedConceptSection';
-import QueryFlowAnimation from '@/components/animations/QueryFlowAnimation';
-import QuerysetEvaluation from '@/components/animations/QuerysetEvaluation';
-import RelationshipDiagram from '@/components/animations/RelationshipDiagram';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -63,15 +61,15 @@ function ContentCard({ children, className = '' }) {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
-export default function QueryTopicPage({ params }) {
+export default function DjangoInternalsTopicPage({ params }) {
   const resolvedParams = use(params);
   const topicId = resolvedParams.topic;
   const router = useRouter();
 
-  const topic = queryTopics.find((t) => t.id === topicId);
-  const topicIndex = queryTopics.findIndex((t) => t.id === topicId);
-  const prevTopic = topicIndex > 0 ? queryTopics[topicIndex - 1] : null;
-  const nextTopic = topicIndex < queryTopics.length - 1 ? queryTopics[topicIndex + 1] : null;
+  const topic = djangoInternalsTopics.find((t) => t.id === topicId);
+  const topicIndex = djangoInternalsTopics.findIndex((t) => t.id === topicId);
+  const prevTopic = topicIndex > 0 ? djangoInternalsTopics[topicIndex - 1] : null;
+  const nextTopic = topicIndex < djangoInternalsTopics.length - 1 ? djangoInternalsTopics[topicIndex + 1] : null;
 
   const {
     completedTopics,
@@ -94,7 +92,6 @@ export default function QueryTopicPage({ params }) {
     setTimeout(() => setNoteSaved(false), 2000);
   }, [topic, noteText, saveNote]);
 
-  // 404 state
   if (!topic) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: 'var(--bg)' }}>
@@ -114,15 +111,15 @@ export default function QueryTopicPage({ params }) {
             >
               {topicId}
             </code>{' '}
-            does not exist in our QuerySet curriculum.
+            does not exist in Django Internals.
           </p>
           <Link
-            href="/learn/queries"
+            href="/learn/django"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-medium text-sm transition-colors"
             style={{ backgroundColor: 'var(--accent)' }}
           >
             <ChevronLeft className="w-4 h-4" />
-            Back to QuerySet & ORM
+            Back to Django Internals
           </Link>
         </div>
       </div>
@@ -134,7 +131,7 @@ export default function QueryTopicPage({ params }) {
   const { content } = topic;
 
   function handleTopicSelect(selected) {
-    router.push(`/learn/queries/${selected.id}`);
+    router.push(`/learn/django/${selected.id}`);
   }
 
   return (
@@ -145,18 +142,18 @@ export default function QueryTopicPage({ params }) {
         <nav className="flex items-center gap-1.5 text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
           <Link href="/learn" style={{ color: 'var(--accent)' }}>Learn</Link>
           <span>/</span>
-          <Link href="/learn/queries" style={{ color: 'var(--accent)' }}>Queries</Link>
+          <Link href="/learn/django" style={{ color: 'var(--accent)' }}>Internals</Link>
           <span>/</span>
           <span style={{ color: 'var(--text)' }} className="truncate max-w-[10rem]">{topic.title}</span>
         </nav>
         <select
           value={topicId}
-          onChange={(e) => router.push(`/learn/queries/${e.target.value}`)}
+          onChange={(e) => router.push(`/learn/django/${e.target.value}`)}
           className="w-full text-sm rounded-xl px-4 py-2"
           style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)' }}
           aria-label="Navigate to topic"
         >
-          {queryTopics.map((t) => (
+          {djangoInternalsTopics.map((t) => (
             <option key={t.id} value={t.id}>{t.title}</option>
           ))}
         </select>
@@ -179,22 +176,22 @@ export default function QueryTopicPage({ params }) {
             <nav className="flex items-center gap-1 text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
               <Link href="/learn" className="hover:underline" style={{ color: 'var(--accent)' }}>Learn</Link>
               <span>/</span>
-              <Link href="/learn/queries" className="hover:underline" style={{ color: 'var(--accent)' }}>Queries</Link>
+              <Link href="/learn/django" className="hover:underline" style={{ color: 'var(--accent)' }}>Internals</Link>
             </nav>
             <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />
-              <span className="font-bold text-sm" style={{ color: 'var(--text)' }}>QuerySet & ORM</span>
+              <Layers className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />
+              <span className="font-bold text-sm" style={{ color: 'var(--text)' }}>Django Internals</span>
             </div>
             <div className="mt-3">
               <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
                 <span>Progress</span>
-                <span style={{ color: 'var(--accent)' }}>{Array.from(completedTopics).filter(id => queryTopics.find(t => String(t.id) === id)).length}/{queryTopics.length}</span>
+                <span style={{ color: 'var(--accent)' }}>{Array.from(completedTopics).filter(id => djangoInternalsTopics.find(t => String(t.id) === id)).length}/{djangoInternalsTopics.length}</span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
                 <div
                   className="h-full rounded-full transition-all duration-700"
                   style={{
-                    width: `${Math.round((Array.from(completedTopics).filter(id => queryTopics.find(t => String(t.id) === id)).length / queryTopics.length) * 100)}%`,
+                    width: `${Math.round((Array.from(completedTopics).filter(id => djangoInternalsTopics.find(t => String(t.id) === id)).length / djangoInternalsTopics.length) * 100)}%`,
                     backgroundColor: 'var(--accent)',
                   }}
                 />
@@ -204,7 +201,7 @@ export default function QueryTopicPage({ params }) {
           {/* Scrollable topic list */}
           <div className="flex-1 overflow-y-auto p-3" style={{ scrollbarWidth: 'none' }}>
             <TopicList
-              topics={queryTopics}
+              topics={djangoInternalsTopics}
               completedTopics={completedTopics}
               currentTopicId={topic.id}
               onSelect={handleTopicSelect}
@@ -215,7 +212,7 @@ export default function QueryTopicPage({ params }) {
         {/* ── MAIN CONTENT — page scroll handles this ───────────────────── */}
         <main className="flex-1 min-w-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-            {/* Topic header card */}
+            {/* Topic header */}
             <AnimatedConceptSection delay={0}>
               <ContentCard>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -233,7 +230,7 @@ export default function QueryTopicPage({ params }) {
                           {topic.estimatedMinutes} min
                         </span>
                       )}
-                      <Badge variant="queries" size="sm">Queries</Badge>
+                      <Badge variant="default" size="sm">Django</Badge>
                     </div>
 
                     <h1 className="text-2xl sm:text-3xl font-bold leading-tight mb-3" style={{ color: 'var(--text)' }}>
@@ -246,7 +243,6 @@ export default function QueryTopicPage({ params }) {
                       </p>
                     )}
 
-                    {/* Tags */}
                     {topic.tags?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {topic.tags.map((tag) => (
@@ -256,7 +252,6 @@ export default function QueryTopicPage({ params }) {
                     )}
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => toggleBookmark(topic.id)}
@@ -294,18 +289,7 @@ export default function QueryTopicPage({ params }) {
               </ContentCard>
             </AnimatedConceptSection>
 
-            {/* ── Interactive animation: what-is-queryset (flow) ─────────── */}
-            {topic.id === 'what-is-queryset' && (
-              <AnimatedConceptSection delay={0.05}>
-                <QueryFlowAnimation
-                  queryExample="Book.objects.filter(price__lt=20)"
-                  sqlExample="SELECT * FROM book WHERE price < 20"
-                  resultExample="<QuerySet [<Book: Harry Potter>, <Book: 1984>, ...]>"
-                />
-              </AnimatedConceptSection>
-            )}
-
-            {/* ── 1. What it is ─────────────────────────────────────────── */}
+            {/* 1. What it is */}
             {content.explanation && (
               <AnimatedConceptSection delay={0.1}>
                 <ContentCard>
@@ -317,14 +301,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── Interactive animation: what-is-queryset (lazy eval) ──────── */}
-            {topic.id === 'what-is-queryset' && (
-              <AnimatedConceptSection delay={0.15}>
-                <QuerysetEvaluation />
-              </AnimatedConceptSection>
-            )}
-
-            {/* ── 2. Real World Example ─────────────────────────────────── */}
+            {/* 2. Real World Example */}
             {content.realExample && (
               <AnimatedConceptSection delay={0.2}>
                 <ContentCard>
@@ -336,7 +313,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── 3. Code Example ───────────────────────────────────────── */}
+            {/* 3. Code Example */}
             {content.codeExample && (
               <AnimatedConceptSection delay={0.25}>
                 <section>
@@ -353,14 +330,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── Interactive animation: related-queries / select-related ──── */}
-            {(topic.id === 'related-queries' || topic.id === 'select-related') && (
-              <AnimatedConceptSection delay={0.28}>
-                <RelationshipDiagram />
-              </AnimatedConceptSection>
-            )}
-
-            {/* ── 4. Understanding the Output ───────────────────────────── */}
+            {/* 4. Understanding the Output */}
             {content.outputExplanation && (
               <AnimatedConceptSection delay={0.3}>
                 <ContentCard>
@@ -372,7 +342,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── 5. Common Mistakes ────────────────────────────────────── */}
+            {/* 5. Common Mistakes */}
             {content.commonMistakes?.length > 0 && (
               <AnimatedConceptSection delay={0.35}>
                 <ContentCard>
@@ -396,7 +366,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── 6. Interview Notes ────────────────────────────────────── */}
+            {/* 6. Interview Notes */}
             {content.interviewNotes?.length > 0 && (
               <AnimatedConceptSection delay={0.4}>
                 <ContentCard>
@@ -415,7 +385,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── 7. When to Use ────────────────────────────────────────── */}
+            {/* 7. When to Use */}
             {content.whenToUse && (
               <AnimatedConceptSection delay={0.45}>
                 <ContentCard>
@@ -427,7 +397,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── 8. When NOT to Use ────────────────────────────────────── */}
+            {/* 8. When NOT to Use */}
             {content.whenNotToUse && (
               <AnimatedConceptSection delay={0.5}>
                 <ContentCard>
@@ -439,7 +409,7 @@ export default function QueryTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── User Notes ────────────────────────────────────────────── */}
+            {/* User Notes */}
             <AnimatedConceptSection delay={0.55}>
               <ContentCard>
                 <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text)' }}>My Notes</h2>
@@ -473,11 +443,11 @@ export default function QueryTopicPage({ params }) {
               </ContentCard>
             </AnimatedConceptSection>
 
-            {/* ── Prev / Next navigation ────────────────────────────────── */}
+            {/* Prev / Next navigation */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
               {prevTopic ? (
                 <Link
-                  href={`/learn/queries/${prevTopic.id}`}
+                  href={`/learn/django/${prevTopic.id}`}
                   className="group flex flex-col gap-1 p-4 rounded-2xl transition-all duration-150"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
@@ -497,7 +467,7 @@ export default function QueryTopicPage({ params }) {
 
               {nextTopic ? (
                 <Link
-                  href={`/learn/queries/${nextTopic.id}`}
+                  href={`/learn/django/${nextTopic.id}`}
                   className="group flex flex-col gap-1 p-4 rounded-2xl transition-all duration-150 text-right"
                   style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; }}

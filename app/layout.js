@@ -1,7 +1,8 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
-import ThemeProvider from '@/components/layout/ThemeProvider';
+import Providers from '@/components/layout/Providers';
 import Navbar from '@/components/layout/Navbar';
+import PageTransition from '@/components/layout/PageTransition';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -11,33 +12,18 @@ const inter = Inter({
 
 export const metadata = {
   title: {
-    default: 'Django ORM Master',
-    template: '%s | Django ORM Master',
+    default: 'Django by Uzair',
+    template: '%s | Django by Uzair',
   },
   description:
-    'Master Django ORM concepts — models, queries, migrations and more — through interactive lessons and exercises.',
-  keywords: ['Django', 'ORM', 'Python', 'learning', 'practice', 'models', 'queries'],
+    'Master Django ORM concepts — models, queries, middleware, and project flow — through interactive lessons and exercises. Built by Uzair.',
+  keywords: ['Django', 'ORM', 'Python', 'learning', 'practice', 'models', 'queries', 'middleware'],
   openGraph: {
-    title: 'Django ORM Master',
-    description: 'Interactive Django ORM learning platform',
+    title: 'Django by Uzair',
+    description: 'Interactive Django learning platform built by Uzair',
     type: 'website',
   },
 };
-
-// Inline script runs BEFORE React hydrates — eliminates flash of wrong theme.
-const themeScript = `
-(function(){
-  try {
-    var t = localStorage.getItem('django-practice-theme');
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (t === 'dark' || (!t && prefersDark)) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  } catch(e) {}
-})();
-`;
 
 export default function RootLayout({ children }) {
   return (
@@ -47,21 +33,29 @@ export default function RootLayout({ children }) {
       className={inter.variable}
     >
       <head>
-        {/* Blocking script — must run before first paint to prevent FOUC */}
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className="min-h-screen bg-slate-50 text-slate-900 dark:bg-black dark:text-zinc-100 antialiased transition-colors duration-200">
-        <ThemeProvider>
-          <div className="flex flex-col min-h-screen">
+
+      {/*
+        h-screen + overflow-hidden: browser scrollbar only shows inside #page-scroll,
+        starting below the navbar rather than at the very top of the viewport.
+      */}
+      <body className="h-screen overflow-hidden antialiased">
+        <Providers>
+          <div className="flex flex-col h-full">
             <Navbar />
-            <main className="flex-1">
-              {children}
-            </main>
-            <footer className="border-t border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 py-6 text-center text-sm text-slate-500 dark:text-zinc-400">
-              <p>Django ORM Master &mdash; Built for developers who want to level up.</p>
-            </footer>
+            <div id="page-scroll" className="flex-1 overflow-y-auto">
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </div>
           </div>
-        </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

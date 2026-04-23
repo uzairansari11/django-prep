@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { flushSync } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -14,128 +15,244 @@ import {
   Zap,
   LayoutDashboard,
   Flame,
+  Settings,
+  Maximize,
+  Minimize,
 } from 'lucide-react';
-import { useTheme } from '@/hooks/useTheme';
-import { cn } from '@/lib/utils';
+import { useAppSettings } from '@/hooks/useAppSettings';
+import SettingsDrawer from '@/components/ui/SettingsDrawer';
 
 const NAV_LINKS = [
-  { href: '/',                   label: 'Dashboard',     icon: LayoutDashboard, color: null },
-  { href: '/learn/models',       label: 'Learn Models',  icon: Database,        color: 'indigo' },
-  { href: '/learn/queries',      label: 'Learn Queries', icon: BookOpen,        color: 'sky' },
-  { href: '/learn/production',   label: 'Production',    icon: Flame,           color: 'amber' },
-  { href: '/practice',           label: 'Practice',      icon: Zap,             color: null },
+  { href: '/',                  label: 'Dashboard',  icon: LayoutDashboard },
+  { href: '/learn/models',      label: 'Models',     icon: Database },
+  { href: '/learn/queries',     label: 'Queries',    icon: BookOpen },
+  { href: '/learn/production',  label: 'Production', icon: Flame },
+  { href: '/learn/django',      label: 'Internals',  icon: Search },
+  { href: '/practice',          label: 'Practice',   icon: Zap },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { isDark, toggleTheme } = useTheme();
+  const { isDark, toggleDark } = useAppSettings();
+  const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   const isActive = (href) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
 
+  const handleToggleDark = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    document.documentElement.style.setProperty('--reveal-x', `${x}px`);
+    document.documentElement.style.setProperty('--reveal-y', `${y}px`);
+
+    if (!document.startViewTransition) {
+      toggleDark();
+      return;
+    }
+    document.startViewTransition(() => {
+      flushSync(() => toggleDark());
+    });
+  };
+
+  const iconBtnStyle = {
+    color: 'var(--text-muted)',
+  };
+
+  function IconButton({ onClick, label, children }) {
+    return (
+      <button
+        onClick={onClick}
+        aria-label={label}
+        className="p-2 rounded-lg transition-all duration-150"
+        style={iconBtnStyle}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--surface-2)';
+          e.currentTarget.style.color = 'var(--text)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '';
+          e.currentTarget.style.color = 'var(--text-muted)';
+        }}
+      >
+        {children}
+      </button>
+    );
+  }
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/90 backdrop-blur-md">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <>
+      <header
+        className="sticky top-0 z-30 border-b"
+        style={{
+          borderColor: 'var(--border)',
+          backgroundColor: 'var(--surface)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          opacity: 0.95,
+        }}
+      >
+        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center h-14 gap-4">
 
-          {/* ─── Logo ─────────────────────────────────────────────────── */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 group"
-            onClick={() => setMobileOpen(false)}
-          >
-            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600 text-white shadow-md shadow-indigo-500/30 group-hover:shadow-indigo-500/50 transition-shadow">
-              <Database className="w-4 h-4" />
-            </span>
-            <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">
-              Django <span className="text-indigo-500">ORM</span> Master
-            </span>
-          </Link>
-
-          {/* ─── Desktop nav links ─────────────────────────────────────── */}
-          <div className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(({ href, label, icon: Icon, color }) => {
-              const active = isActive(href);
-              const activeClasses =
-                color === 'amber'
-                  ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-                  : color === 'sky'
-                  ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400'
-                  : 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400';
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className={cn(
-                    'flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-150',
-                    active
-                      ? activeClasses
-                      : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100'
-                  )}
-                >
-                  <Icon className="w-4 h-4" />
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* ─── Right controls ───────────────────────────────────────── */}
-          <div className="flex items-center gap-2">
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-150"
+            {/* ─── Logo ─────────────────────────────────────────────────── */}
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 shrink-0 group"
+              onClick={() => setMobileOpen(false)}
             >
-              {isDark ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
-            </button>
+              <span
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-white transition-all duration-150"
+                style={{
+                  backgroundColor: 'var(--accent)',
+                  boxShadow: '0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent)',
+                }}
+              >
+                <Database className="w-4 h-4" />
+              </span>
+              <span className="font-bold text-base tracking-tight hidden sm:block" style={{ color: 'var(--text)' }}>
+                Django <span style={{ color: 'var(--accent)' }}>by</span> Uzair
+              </span>
+            </Link>
 
-            {/* Mobile hamburger */}
-            <button
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              className="md:hidden p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all duration-150"
-            >
-              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
-
-        {/* ─── Mobile menu ──────────────────────────────────────────────── */}
-        {mobileOpen && (
-          <div className="md:hidden border-t border-slate-200 dark:border-zinc-800 py-3 pb-4 animate-fade-in">
-            <div className="flex flex-col gap-1">
-              {NAV_LINKS.map(({ href, label, icon: Icon, color }) => {
+            {/* ─── Desktop nav links ─────────────────────────────────────── */}
+            <div className="hidden md:flex items-center gap-0.5 flex-1">
+              {NAV_LINKS.map(({ href, label, icon: Icon }) => {
                 const active = isActive(href);
-                const activeClasses =
-                  color === 'amber'
-                    ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'
-                    : color === 'sky'
-                    ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400'
-                    : 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400';
                 return (
                   <Link
                     key={href}
                     href={href}
-                    onClick={() => setMobileOpen(false)}
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150"
+                    style={
                       active
-                        ? activeClasses
-                        : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900 dark:hover:text-slate-100'
-                    )}
+                        ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)' }
+                        : { color: 'var(--text-muted)' }
+                    }
+                    onMouseEnter={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.backgroundColor = 'var(--surface-2)';
+                        e.currentTarget.style.color = 'var(--text)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!active) {
+                        e.currentTarget.style.backgroundColor = '';
+                        e.currentTarget.style.color = 'var(--text-muted)';
+                      }
+                    }}
                   >
-                    <Icon className="w-4 h-4" />
+                    <Icon className="w-3.5 h-3.5" />
                     {label}
                   </Link>
                 );
               })}
             </div>
+
+            {/* ─── Right controls ───────────────────────────────────────── */}
+            <div className="flex items-center gap-1 ml-auto">
+              {/* Dark / Light toggle — circular reveal */}
+              <IconButton
+                onClick={handleToggleDark}
+                label={mounted && isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {mounted && isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </IconButton>
+
+              {/* Fullscreen */}
+              <IconButton onClick={toggleFullscreen} label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>
+                {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
+              </IconButton>
+
+              {/* Settings */}
+              <button
+                onClick={() => setSettingsOpen(true)}
+                aria-label="Open preferences"
+                className="p-2 rounded-lg transition-all duration-150"
+                style={settingsOpen
+                  ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)' }
+                  : { color: 'var(--text-muted)' }
+                }
+                onMouseEnter={(e) => {
+                  if (!settingsOpen) {
+                    e.currentTarget.style.backgroundColor = 'var(--surface-2)';
+                    e.currentTarget.style.color = 'var(--text)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!settingsOpen) {
+                    e.currentTarget.style.backgroundColor = '';
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                  }
+                }}
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setMobileOpen((v) => !v)}
+                aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+                className="md:hidden p-2 rounded-lg transition-all duration-150"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--surface-2)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
+              >
+                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
-        )}
-      </nav>
-    </header>
+
+          {/* ─── Mobile menu ──────────────────────────────────────────────── */}
+          {mobileOpen && (
+            <div className="md:hidden border-t py-3 pb-4" style={{ borderColor: 'var(--border)' }}>
+              <div className="flex flex-col gap-1">
+                {NAV_LINKS.map(({ href, label, icon: Icon }) => {
+                  const active = isActive(href);
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150"
+                      style={
+                        active
+                          ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)' }
+                          : { color: 'var(--text-muted)' }
+                      }
+                    >
+                      <Icon className="w-4 h-4" />
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </nav>
+      </header>
+
+      {/* Settings drawer rendered outside nav stacking context */}
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+    </>
   );
 }

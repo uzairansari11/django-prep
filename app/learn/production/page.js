@@ -2,289 +2,233 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Flame,
-  ChevronLeft,
-  BookOpen,
-  Shield,
-  Database,
-  List,
-  FileText,
-  Settings,
-  Zap,
-  Clock,
-  Globe,
-  Lock,
-  TrendingUp,
+  Flame, ChevronLeft, BookOpen,
+  Shield, Database, List, FileText, Settings, Zap,
+  Clock, Globe, Lock, TrendingUp, X,
 } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import TopicCard from '@/components/ui/TopicCard';
-import ProgressBar from '@/components/ui/ProgressBar';
 import SearchBar from '@/components/ui/SearchBar';
 import DifficultyFilter from '@/components/practice/DifficultyFilter';
 import { productionTopics, productionSubcategories } from '@/data/production-topics';
 
-const ICON_MAP = {
-  Shield,
-  Database,
-  List,
-  FileText,
-  Settings,
-  Zap,
-  Clock,
-  Globe,
-  Lock,
-  TrendingUp,
-};
+const ICON_MAP = { Shield, Database, List, FileText, Settings, Zap, Clock, Globe, Lock, TrendingUp };
 
 export default function ProductionPage() {
   const [search, setSearch] = useState('');
   const [difficulty, setDifficulty] = useState('all');
   const [activeSubcategory, setActiveSubcategory] = useState('all');
 
-  const {
-    completedTopics,
-    isTopicComplete,
-    markTopicComplete,
-    markTopicIncomplete,
-    toggleBookmark,
-    isBookmarked,
-  } = useProgress();
+  const { completedTopics, isTopicComplete, markTopicComplete, markTopicIncomplete, toggleBookmark, isBookmarked } = useProgress();
 
   const completedCount = useMemo(
-    () => productionTopics.filter((t) => completedTopics.has(String(t.id))).length,
+    () => productionTopics.filter(t => completedTopics.has(String(t.id))).length,
     [completedTopics]
   );
-
   const progress = Math.round((completedCount / productionTopics.length) * 100);
 
   const difficultyCounts = useMemo(() => ({
     all: productionTopics.length,
-    beginner: productionTopics.filter((t) => t.difficulty === 'beginner').length,
-    intermediate: productionTopics.filter((t) => t.difficulty === 'intermediate').length,
-    advanced: productionTopics.filter((t) => t.difficulty === 'advanced').length,
+    beginner: productionTopics.filter(t => t.difficulty === 'beginner').length,
+    intermediate: productionTopics.filter(t => t.difficulty === 'intermediate').length,
+    advanced: productionTopics.filter(t => t.difficulty === 'advanced').length,
   }), []);
 
-  // Subcategory completion counts for the sidebar
-  const subcategoryStats = useMemo(() => {
-    return productionSubcategories.map((sub) => {
-      const topicsInSub = productionTopics.filter((t) => t.subcategory === sub.id);
-      const completedInSub = topicsInSub.filter((t) => completedTopics.has(String(t.id))).length;
-      return {
-        ...sub,
-        total: topicsInSub.length,
-        completed: completedInSub,
-        progress: topicsInSub.length > 0 ? Math.round((completedInSub / topicsInSub.length) * 100) : 0,
-      };
-    });
-  }, [completedTopics]);
+  const subcategoryStats = useMemo(() => productionSubcategories.map(sub => {
+    const topicsInSub = productionTopics.filter(t => t.subcategory === sub.id);
+    const completedInSub = topicsInSub.filter(t => completedTopics.has(String(t.id))).length;
+    return { ...sub, total: topicsInSub.length, completed: completedInSub, pct: topicsInSub.length > 0 ? Math.round((completedInSub / topicsInSub.length) * 100) : 0 };
+  }), [completedTopics]);
 
   const filtered = useMemo(() => {
     let topics = productionTopics;
-
-    if (activeSubcategory !== 'all') {
-      topics = topics.filter((t) => t.subcategory === activeSubcategory);
-    }
-
-    if (difficulty !== 'all') {
-      topics = topics.filter((t) => t.difficulty === difficulty);
-    }
-
+    if (activeSubcategory !== 'all') topics = topics.filter(t => t.subcategory === activeSubcategory);
+    if (difficulty !== 'all') topics = topics.filter(t => t.difficulty === difficulty);
     if (search.trim()) {
       const q = search.toLowerCase().trim();
-      topics = topics.filter(
-        (t) =>
-          t.title.toLowerCase().includes(q) ||
-          t.description?.toLowerCase().includes(q) ||
-          t.tags?.some((tag) => tag.toLowerCase().includes(q)) ||
-          t.subcategory?.toLowerCase().includes(q)
+      topics = topics.filter(t =>
+        t.title.toLowerCase().includes(q) ||
+        t.description?.toLowerCase().includes(q) ||
+        t.tags?.some(tag => tag.toLowerCase().includes(q))
       );
     }
-
     return topics;
   }, [search, difficulty, activeSubcategory]);
 
-  function handleToggle(id) {
-    if (isTopicComplete(id)) {
-      markTopicIncomplete(id);
-    } else {
-      markTopicComplete(id);
-    }
-  }
+  const hasFilters = search || difficulty !== 'all' || activeSubcategory !== 'all';
+  const clearFilters = () => { setSearch(''); setDifficulty('all'); setActiveSubcategory('all'); };
 
-  function clearFilters() {
-    setSearch('');
-    setDifficulty('all');
-    setActiveSubcategory('all');
-  }
-
-  const hasActiveFilters = search || difficulty !== 'all' || activeSubcategory !== 'all';
+  const activeSub = subcategoryStats.find(s => s.id === activeSubcategory);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
-      {/* Page header */}
-      <div className="bg-white dark:bg-zinc-900/50 border-b border-slate-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="min-h-screen overflow-x-hidden">
+
+      {/* ── Page Header ── */}
+      <div style={{ backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
           {/* Breadcrumb */}
-          <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-5">
-            <Link
-              href="/learn"
-              className="flex items-center gap-1 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              Learning Center
+          <nav className="flex items-center gap-2 text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
+            <Link href="/learn" className="flex items-center gap-1 hover:underline" style={{ color: 'var(--accent)' }}>
+              <ChevronLeft className="w-3.5 h-3.5" /> Learning Center
             </Link>
             <span>/</span>
-            <span className="text-slate-900 dark:text-white font-medium">Production Patterns</span>
-          </div>
+            <span style={{ color: 'var(--text)', fontWeight: 500 }}>Production Patterns</span>
+          </nav>
 
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="flex items-start gap-4">
-              {/* Gradient icon */}
-              <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shrink-0 shadow-lg shadow-amber-500/30">
-                <Flame className="w-6 h-6 text-white" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Title */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-11 h-11 rounded-2xl shrink-0" style={{ backgroundColor: 'var(--accent)' }}>
+                <Flame className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-                  Production Patterns
-                </h1>
-                <p className="mt-1 text-slate-500 dark:text-zinc-400 max-w-lg">
-                  From auth to deployment — build Django apps that scale.
-                </p>
+                <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text)' }}>Production Patterns</h1>
+                <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>From auth to deployment — build Django apps that scale.</p>
               </div>
             </div>
 
-            <div className="shrink-0 flex flex-col items-end gap-2">
-              <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
-                {completedCount}/{productionTopics.length} completed
-              </span>
-              <div className="w-32">
-                <ProgressBar value={progress} color="amber" size="sm" />
+            {/* Progress */}
+            <div className="sm:text-right shrink-0">
+              <p className="text-sm font-bold mb-1.5" style={{ color: 'var(--accent)' }}>
+                {completedCount} / {productionTopics.length} completed
+              </p>
+              <div className="w-40 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{ backgroundColor: 'var(--accent)' }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                />
               </div>
             </div>
           </div>
 
-          {/* Stats row */}
-          <div className="mt-6 flex flex-wrap gap-4">
-            <div className="px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200/70 dark:border-amber-800/40">
-              <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Total Topics</span>
-              <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{productionTopics.length}</p>
-            </div>
-            <div className="px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200/70 dark:border-emerald-800/40">
-              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Completed</span>
-              <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{completedCount}</p>
-            </div>
-            <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
-              <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Subcategories</span>
-              <p className="text-xl font-bold text-slate-700 dark:text-zinc-300">{productionSubcategories.length}</p>
-            </div>
+          {/* Stats chips */}
+          <div className="flex flex-wrap gap-3 mt-5">
+            {[
+              { label: 'Total Topics', value: productionTopics.length },
+              { label: 'Completed', value: completedCount },
+              { label: 'Subcategories', value: productionSubcategories.length },
+              { label: 'Intermediate', value: difficultyCounts.intermediate },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex items-center gap-2.5 px-4 py-2 rounded-xl" style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{label}</span>
+                <span className="text-base font-bold" style={{ color: 'var(--text)' }}>{value}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-8 items-start">
-          {/* Main content */}
-          <div className="flex-1 min-w-0">
-            {/* Subcategory filter tabs */}
-            <div className="mb-5 -mx-1">
-              <div className="flex gap-2 overflow-x-auto pb-2 px-1 scrollbar-hide">
-                {/* All tab */}
-                <button
-                  onClick={() => setActiveSubcategory('all')}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-150 shrink-0 ${
-                    activeSubcategory === 'all'
-                      ? 'bg-amber-600 text-white shadow-md shadow-amber-500/30'
-                      : 'bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600 dark:hover:text-amber-400'
-                  }`}
-                >
-                  <Flame className="w-3.5 h-3.5" />
-                  All
-                </button>
+      {/* ── Body: Sidebar + Main ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <div className="flex gap-6 items-start">
 
-                {productionSubcategories.map((sub) => {
-                  const IconComponent = ICON_MAP[sub.icon];
-                  const isActive = activeSubcategory === sub.id;
+          {/* ── LEFT SIDEBAR: Category navigation ── */}
+          <aside className="hidden lg:block w-52 shrink-0">
+            <div
+              className="sticky top-4 flex flex-col"
+              style={{ maxHeight: 'calc(100vh - 5rem)' }}
+            >
+              {/* Heading — always visible */}
+              <p className="text-[11px] font-semibold uppercase tracking-widest px-2 mb-3 shrink-0" style={{ color: 'var(--text-subtle)' }}>
+                Categories
+              </p>
+
+              {/* Scrollable list */}
+              <div className="overflow-y-auto space-y-1 pr-0.5" style={{ scrollbarWidth: 'thin' }}>
+                {/* All */}
+                <CategoryBtn
+                  label="All Topics"
+                  count={productionTopics.length}
+                  isActive={activeSubcategory === 'all'}
+                  onClick={() => setActiveSubcategory('all')}
+                />
+
+                <div className="my-2 h-px" style={{ backgroundColor: 'var(--border)' }} />
+
+                {/* Each subcategory */}
+                {subcategoryStats.map(sub => {
+                  const Icon = ICON_MAP[sub.icon];
                   return (
-                    <button
+                    <CategoryBtn
                       key={sub.id}
-                      onClick={() => setActiveSubcategory(sub.id)}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-150 shrink-0 ${
-                        isActive
-                          ? 'bg-amber-600 text-white shadow-md shadow-amber-500/30'
-                          : 'bg-white dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600 dark:hover:text-amber-400'
-                      }`}
-                    >
-                      {IconComponent && <IconComponent className="w-3.5 h-3.5" />}
-                      {sub.label}
-                    </button>
+                      icon={Icon}
+                      label={sub.label}
+                      count={sub.total}
+                      completed={sub.completed}
+                      pct={sub.pct}
+                      isActive={activeSubcategory === sub.id}
+                      onClick={() => setActiveSubcategory(activeSubcategory === sub.id ? 'all' : sub.id)}
+                    />
                   );
                 })}
               </div>
             </div>
+          </aside>
 
-            {/* Search + Difficulty controls */}
-            <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <div className="flex-1">
-                <SearchBar
-                  value={search}
-                  onChange={setSearch}
-                  placeholder="Search production topics, tags…"
-                />
-              </div>
-              <DifficultyFilter
-                selected={difficulty}
-                onChange={setDifficulty}
-                counts={difficultyCounts}
-              />
+          {/* ── MAIN: Filters + Grid ── */}
+          <div className="flex-1 min-w-0">
+
+            {/* Controls row */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+              <SearchBar value={search} onChange={setSearch} placeholder="Search topics, tags…" className="flex-1" />
+              <DifficultyFilter selected={difficulty} onChange={setDifficulty} counts={difficultyCounts} />
             </div>
 
-            {/* Results meta */}
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-sm text-slate-500 dark:text-zinc-400">
-                {filtered.length === productionTopics.length
-                  ? `${productionTopics.length} topics`
-                  : `${filtered.length} of ${productionTopics.length} topics`}
-                {search && (
-                  <span className="ml-1 text-amber-600 dark:text-amber-400">
-                    matching &quot;{search}&quot;
-                  </span>
-                )}
-              </p>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="text-xs font-medium text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            {/* Active filter context + meta */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <span className="font-semibold" style={{ color: 'var(--text)' }}>{filtered.length}</span> topic{filtered.length !== 1 ? 's' : ''}
+                  {activeSub && (
+                    <span style={{ color: 'var(--text-muted)' }}> in <span style={{ color: 'var(--accent)' }}>{activeSub.label}</span></span>
+                  )}
+                  {search && (
+                    <span> matching &ldquo;<span style={{ color: 'var(--accent)' }}>{search}</span>&rdquo;</span>
+                  )}
+                </p>
+                {/* Mobile subcategory dropdown */}
+                <select
+                  value={activeSubcategory}
+                  onChange={e => setActiveSubcategory(e.target.value)}
+                  className="lg:hidden text-xs rounded-lg px-2 py-1 focus:outline-none"
+                  style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text)' }}
                 >
-                  Clear filters
+                  <option value="all">All Categories</option>
+                  {productionSubcategories.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              </div>
+              {hasFilters && (
+                <button onClick={clearFilters} className="flex items-center gap-1 text-xs font-medium" style={{ color: 'var(--accent)' }}>
+                  <X className="w-3 h-3" /> Clear
                 </button>
               )}
             </div>
 
-            {/* Topics grid */}
+            {/* Grid */}
             {filtered.length === 0 ? (
-              <div className="text-center py-16 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800">
-                <Flame className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                <p className="font-semibold text-slate-700 dark:text-zinc-300">No topics found</p>
-                <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-                  Try a different search term, difficulty, or subcategory.
-                </p>
-                <button
-                  onClick={clearFilters}
-                  className="mt-4 px-4 py-2 rounded-xl bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 transition-colors"
-                >
+              <div className="text-center py-16 rounded-2xl" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+                <Flame className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--border-strong)' }} />
+                <p className="font-semibold mb-1" style={{ color: 'var(--text)' }}>No topics found</p>
+                <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>Try a different search or filter.</p>
+                <button onClick={clearFilters} className="px-4 py-2 rounded-xl text-sm font-medium text-white" style={{ backgroundColor: 'var(--accent)' }}>
                   Show all topics
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filtered.map((topic) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {filtered.map(topic => (
                   <TopicCard
                     key={topic.id}
                     topic={topic}
                     isCompleted={isTopicComplete(topic.id)}
                     isBookmarked={isBookmarked(topic.id)}
-                    onComplete={() => handleToggle(topic.id)}
+                    onComplete={() => isTopicComplete(topic.id) ? markTopicIncomplete(topic.id) : markTopicComplete(topic.id)}
                     onBookmark={() => toggleBookmark(topic.id)}
                     href={`/learn/production/${topic.id}`}
                   />
@@ -292,48 +236,36 @@ export default function ProductionPage() {
               </div>
             )}
           </div>
-
-          {/* Right sidebar — subcategory progress */}
-          <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-6 bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <h2 className="font-bold text-slate-900 dark:text-white text-sm">Subcategory Progress</h2>
-              </div>
-
-              <div className="space-y-4">
-                {subcategoryStats.map((sub) => {
-                  const IconComponent = ICON_MAP[sub.icon];
-                  return (
-                    <button
-                      key={sub.id}
-                      onClick={() => setActiveSubcategory(activeSubcategory === sub.id ? 'all' : sub.id)}
-                      className={`w-full text-left group transition-all duration-150 ${
-                        activeSubcategory === sub.id ? 'opacity-100' : 'opacity-80 hover:opacity-100'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <div className="flex items-center gap-1.5">
-                          {IconComponent && (
-                            <IconComponent className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 shrink-0" />
-                          )}
-                          <span className="text-xs font-medium text-slate-700 dark:text-zinc-300 truncate">
-                            {sub.label}
-                          </span>
-                        </div>
-                        <span className="text-xs text-slate-500 dark:text-zinc-400 shrink-0 ml-2">
-                          {sub.completed}/{sub.total}
-                        </span>
-                      </div>
-                      <ProgressBar value={sub.progress} color="amber" size="sm" />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Category sidebar button ── */
+function CategoryBtn({ icon: Icon, label, count, completed, pct, isActive, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left px-2.5 py-2 rounded-xl transition-all duration-150"
+      style={isActive
+        ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)' }
+        : { color: 'var(--text-muted)' }
+      }
+      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.backgroundColor = 'var(--surface-2)'; e.currentTarget.style.color = 'var(--text)'; } }}
+      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = 'var(--text-muted)'; } }}
+    >
+      <div className="flex items-center gap-2">
+        {Icon && <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: isActive ? 'var(--accent)' : 'inherit' }} />}
+        <span className="flex-1 text-xs font-medium truncate">{label}</span>
+        <span className="text-[11px] shrink-0" style={{ color: isActive ? 'var(--accent-text)' : 'var(--text-subtle)' }}>{count}</span>
+      </div>
+      {/* Mini progress bar shown when there's progress data */}
+      {pct !== undefined && (
+        <div className="mt-1.5 ml-5 h-0.5 rounded-full overflow-hidden" style={{ backgroundColor: isActive ? 'var(--accent-border)' : 'var(--border)' }}>
+          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: 'var(--accent)', opacity: isActive ? 1 : 0.5 }} />
+        </div>
+      )}
+    </button>
   );
 }

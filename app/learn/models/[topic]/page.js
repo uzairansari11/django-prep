@@ -35,7 +35,7 @@ function TextContent({ text }) {
   return (
     <div className="space-y-3">
       {paragraphs.map((para, i) => (
-        <p key={i} className="text-slate-700 dark:text-zinc-300 leading-relaxed text-sm">
+        <p key={i} className="leading-relaxed text-sm" style={{ color: 'var(--text-muted)' }}>
           {para}
         </p>
       ))}
@@ -43,12 +43,23 @@ function TextContent({ text }) {
   );
 }
 
-function SectionHeading({ icon: Icon, children, className = '' }) {
+function SectionHeading({ icon: Icon, children }) {
   return (
-    <div className={`flex items-center gap-2.5 mb-4 ${className}`}>
-      {Icon && <Icon className="w-5 h-5 shrink-0" />}
-      <h2 className="text-lg font-bold text-slate-900 dark:text-white">{children}</h2>
+    <div className="flex items-center gap-2.5 mb-4">
+      {Icon && <Icon className="w-5 h-5 shrink-0" style={{ color: 'var(--accent)' }} />}
+      <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>{children}</h2>
     </div>
+  );
+}
+
+function ContentCard({ children, className = '' }) {
+  return (
+    <section
+      className={`rounded-2xl p-6 ${className}`}
+      style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}
+    >
+      {children}
+    </section>
   );
 }
 
@@ -85,21 +96,31 @@ export default function ModelTopicPage({ params }) {
     setTimeout(() => setNoteSaved(false), 2000);
   }, [topic, noteText, saveNote]);
 
-  // 404 state
   if (!topic) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex items-center justify-center p-8">
+      <div className="min-h-screen flex items-center justify-center p-8" style={{ backgroundColor: 'var(--bg)' }}>
         <div className="text-center max-w-md">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-900/40 mx-auto mb-5">
-            <AlertTriangle className="w-8 h-8 text-rose-600 dark:text-rose-400" />
+          <div
+            className="flex items-center justify-center w-16 h-16 rounded-2xl mx-auto mb-5"
+            style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}
+          >
+            <AlertTriangle className="w-8 h-8" style={{ color: 'var(--accent)' }} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Topic not found</h1>
-          <p className="text-slate-500 dark:text-zinc-400 mb-6 text-sm">
-            The topic <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-900 font-mono text-xs">{topicId}</code> does not exist in our models curriculum.
+          <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text)' }}>Topic not found</h1>
+          <p className="mb-6 text-sm" style={{ color: 'var(--text-muted)' }}>
+            The topic{' '}
+            <code
+              className="px-1.5 py-0.5 rounded font-mono text-xs"
+              style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text)' }}
+            >
+              {topicId}
+            </code>{' '}
+            does not exist in our models curriculum.
           </p>
           <Link
             href="/learn/models"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium text-sm hover:bg-indigo-700 transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-medium text-sm transition-colors"
+            style={{ backgroundColor: 'var(--accent)' }}
           >
             <ChevronLeft className="w-4 h-4" />
             Back to Models
@@ -118,55 +139,87 @@ export default function ModelTopicPage({ params }) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-4">
-          <Link href="/learn" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            Learn
-          </Link>
+    <div className="min-h-screen">
+
+      {/* Mobile: breadcrumb + topic picker */}
+      <div className="lg:hidden border-b px-4 py-3" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}>
+        <nav className="flex items-center gap-1.5 text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+          <Link href="/learn" style={{ color: 'var(--accent)' }}>Learn</Link>
           <span>/</span>
-          <Link href="/learn/models" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-            Django Models
-          </Link>
+          <Link href="/learn/models" style={{ color: 'var(--accent)' }}>Models</Link>
           <span>/</span>
-          <span className="text-slate-700 dark:text-zinc-300 font-medium truncate max-w-[12rem]">{topic.title}</span>
+          <span style={{ color: 'var(--text)' }} className="truncate max-w-[10rem]">{topic.title}</span>
         </nav>
+        <select
+          value={topicId}
+          onChange={(e) => router.push(`/learn/models/${e.target.value}`)}
+          className="w-full text-sm rounded-xl px-4 py-2"
+          style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)' }}
+          aria-label="Navigate to topic"
+        >
+          {modelTopics.map((t) => (
+            <option key={t.id} value={t.id}>{t.title}</option>
+          ))}
+        </select>
+      </div>
 
-        {/* Mobile topic picker — visible only below lg */}
-        <div className="lg:hidden mb-5">
-          <select
-            value={topicId}
-            onChange={(e) => router.push(`/learn/models/${e.target.value}`)}
-            className="w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-slate-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 transition-all duration-150"
-            aria-label="Navigate to topic"
-          >
-            {modelTopics.map((t) => (
-              <option key={t.id} value={t.id}>{t.title}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex gap-8 items-start">
-          {/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */}
-          <aside className="hidden lg:flex flex-col w-72 shrink-0 sticky top-6 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4">
-            <div className="flex items-center gap-2 mb-4 px-1">
-              <BookOpen className="w-4 h-4 text-violet-600 dark:text-violet-400 shrink-0" />
-              <span className="font-bold text-slate-900 dark:text-white text-sm">Django Models</span>
+      <div className="flex items-start">
+        {/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */}
+        <aside
+          className="hidden lg:flex flex-col w-72 shrink-0 border-r"
+          style={{
+            position: 'sticky',
+            top: 0,
+            height: 'calc(100vh - 4rem)',
+            backgroundColor: 'var(--surface)',
+            borderColor: 'var(--border)',
+          }}
+        >
+          <div className="shrink-0 px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+            <nav className="flex items-center gap-1 text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+              <Link href="/learn" className="hover:underline" style={{ color: 'var(--accent)' }}>Learn</Link>
+              <span>/</span>
+              <Link href="/learn/models" className="hover:underline" style={{ color: 'var(--accent)' }}>Models</Link>
+            </nav>
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />
+              <span className="font-bold text-sm" style={{ color: 'var(--text)' }}>Django Models</span>
             </div>
+            <div className="mt-3">
+              <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+                <span>Progress</span>
+                <span style={{ color: 'var(--accent)' }}>
+                  {Array.from(completedTopics).filter(id => modelTopics.find(t => String(t.id) === id)).length}/{modelTopics.length}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.round((Array.from(completedTopics).filter(id => modelTopics.find(t => String(t.id) === id)).length / modelTopics.length) * 100)}%`,
+                    backgroundColor: 'var(--accent)',
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3" style={{ scrollbarWidth: 'none' }}>
             <TopicList
               topics={modelTopics}
               completedTopics={completedTopics}
               currentTopicId={topic.id}
               onSelect={handleTopicSelect}
             />
-          </aside>
+          </div>
+        </aside>
 
-          {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
-          <main className="flex-1 min-w-0 space-y-6">
-            {/* Topic header card */}
+        {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
+        <main className="flex-1 min-w-0">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+            {/* Topic header */}
             <AnimatedConceptSection delay={0}>
-              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
+              <ContentCard>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -174,7 +227,10 @@ export default function ModelTopicPage({ params }) {
                         {topic.difficulty.charAt(0).toUpperCase() + topic.difficulty.slice(1)}
                       </Badge>
                       {topic.estimatedMinutes && (
-                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
+                        <span
+                          className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg"
+                          style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-2)' }}
+                        >
                           <Clock className="w-3.5 h-3.5" />
                           {topic.estimatedMinutes} min
                         </span>
@@ -182,17 +238,16 @@ export default function ModelTopicPage({ params }) {
                       <Badge variant="models" size="sm">Models</Badge>
                     </div>
 
-                    <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight mb-3">
+                    <h1 className="text-2xl sm:text-3xl font-bold leading-tight mb-3" style={{ color: 'var(--text)' }}>
                       {topic.title}
                     </h1>
 
                     {topic.description && (
-                      <p className="text-slate-500 dark:text-zinc-400 text-sm leading-relaxed max-w-2xl">
+                      <p className="text-sm leading-relaxed max-w-2xl" style={{ color: 'var(--text-muted)' }}>
                         {topic.description}
                       </p>
                     )}
 
-                    {/* Tags */}
                     {topic.tags?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-3">
                         {topic.tags.map((tag) => (
@@ -207,50 +262,42 @@ export default function ModelTopicPage({ params }) {
                     <button
                       onClick={() => toggleBookmark(topic.id)}
                       title={bookmarked ? 'Remove bookmark' : 'Bookmark this topic'}
-                      className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-all duration-150 ${
-                        bookmarked
-                          ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400'
-                          : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600'
-                      }`}
-                    >
-                      {bookmarked
-                        ? <Bookmark className="w-4 h-4 fill-current" />
-                        : <BookmarkPlus className="w-4 h-4" />
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+                      style={bookmarked
+                        ? { backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent-text)' }
+                        : { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }
                       }
+                      onMouseEnter={(e) => { if (!bookmarked) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; } }}
+                      onMouseLeave={(e) => { if (!bookmarked) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
+                    >
+                      {bookmarked ? <Bookmark className="w-4 h-4 fill-current" /> : <BookmarkPlus className="w-4 h-4" />}
                       <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
                     </button>
 
                     <button
                       onClick={() => isComplete ? markTopicIncomplete(topic.id) : markTopicComplete(topic.id)}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-semibold transition-all duration-150 ${
-                        isComplete
-                          ? 'bg-emerald-600 dark:bg-emerald-700 border-emerald-600 dark:border-emerald-700 text-white hover:bg-emerald-700 dark:hover:bg-emerald-800'
-                          : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-700 dark:hover:text-emerald-400'
-                      }`}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150"
+                      style={isComplete
+                        ? { backgroundColor: 'var(--accent)', border: '1px solid var(--accent)', color: '#fff' }
+                        : { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }
+                      }
+                      onMouseEnter={(e) => { if (!isComplete) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; } }}
+                      onMouseLeave={(e) => { if (!isComplete) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
                     >
                       <CheckCircle className="w-4 h-4" />
                       {isComplete ? 'Completed' : 'Mark Complete'}
                     </button>
                   </div>
                 </div>
-              </div>
+              </ContentCard>
             </AnimatedConceptSection>
 
-            {/* ── Interactive animation: choosing-relationships ──────────── */}
             {topic.id === 'choosing-relationships' && (
-              <AnimatedConceptSection delay={0.05}>
-                <RelationshipChooser />
-              </AnimatedConceptSection>
+              <AnimatedConceptSection delay={0.05}><RelationshipChooser /></AnimatedConceptSection>
             )}
-
-            {/* ── Interactive animation: on-delete-options ───────────────── */}
             {topic.id === 'on-delete-options' && (
-              <AnimatedConceptSection delay={0.05}>
-                <OnDeleteVisualizer />
-              </AnimatedConceptSection>
+              <AnimatedConceptSection delay={0.05}><OnDeleteVisualizer /></AnimatedConceptSection>
             )}
-
-            {/* ── Interactive animation: what-is-a-model ─────────────────── */}
             {topic.id === 'what-is-a-model' && (
               <AnimatedConceptSection delay={0.05}>
                 <ModelTableAnimation
@@ -265,37 +312,30 @@ export default function ModelTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── 1. What it is ─────────────────────────────────────────── */}
             {content.explanation && (
               <AnimatedConceptSection delay={0.1}>
-                <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                  <SectionHeading icon={BookOpen} className="text-slate-700 dark:text-zinc-300">
-                    What it is
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={BookOpen}>What it is</SectionHeading>
                   <TextContent text={content.explanation} />
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── 2. Real World Example ─────────────────────────────────── */}
             {content.realExample && (
               <AnimatedConceptSection delay={0.15}>
-                <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                  <SectionHeading icon={Lightbulb} className="text-amber-600 dark:text-amber-400">
-                    Real World Example
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={Lightbulb}>Real World Example</SectionHeading>
                   <TextContent text={content.realExample} />
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── 3. Code Example ───────────────────────────────────────── */}
             {content.codeExample && (
               <AnimatedConceptSection delay={0.2}>
                 <section>
                   <div className="flex items-center gap-2.5 mb-4">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Code Example</h2>
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
+                    <h2 className="text-lg font-bold" style={{ color: 'var(--text)' }}>Code Example</h2>
                   </div>
                   <CodeBlock
                     code={content.codeExample}
@@ -306,163 +346,152 @@ export default function ModelTopicPage({ params }) {
               </AnimatedConceptSection>
             )}
 
-            {/* ── Interactive animation: foreignkey ──────────────────────── */}
             {topic.id === 'foreignkey' && (
-              <AnimatedConceptSection delay={0.22}>
-                <FKExplainer />
-              </AnimatedConceptSection>
+              <AnimatedConceptSection delay={0.22}><FKExplainer /></AnimatedConceptSection>
             )}
-
-            {/* ── Interactive animation: what-is-queryset (models section) ── */}
             {topic.id === 'what-is-queryset' && (
-              <AnimatedConceptSection delay={0.22}>
-                <QuerysetEvaluation />
-              </AnimatedConceptSection>
+              <AnimatedConceptSection delay={0.22}><QuerysetEvaluation /></AnimatedConceptSection>
             )}
 
-            {/* ── 4. Understanding the Output ───────────────────────────── */}
             {content.outputExplanation && (
               <AnimatedConceptSection delay={0.25}>
-                <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                  <SectionHeading icon={BookOpen} className="text-slate-700 dark:text-zinc-300">
-                    Understanding the Output
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={BookOpen}>Understanding the Output</SectionHeading>
                   <TextContent text={content.outputExplanation} />
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── 5. Common Mistakes ────────────────────────────────────── */}
             {content.commonMistakes?.length > 0 && (
               <AnimatedConceptSection delay={0.3}>
-                <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-rose-200/60 dark:border-rose-800/40 p-6">
-                  <SectionHeading icon={AlertTriangle} className="text-rose-600 dark:text-rose-400">
-                    Common Mistakes
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={AlertTriangle}>Common Mistakes</SectionHeading>
                   <ul className="space-y-3">
                     {content.commonMistakes.map((mistake, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 text-xs font-bold shrink-0 mt-0.5">
+                        <span
+                          className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shrink-0 mt-0.5"
+                          style={{ backgroundColor: 'var(--surface-2)', color: 'var(--accent)', border: '1px solid var(--border)' }}
+                        >
                           {i + 1}
                         </span>
-                        <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">{mistake}</p>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{mistake}</p>
                       </li>
                     ))}
                   </ul>
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── 6. Interview Notes ────────────────────────────────────── */}
             {content.interviewNotes?.length > 0 && (
               <AnimatedConceptSection delay={0.35}>
-                <section className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/50 p-6">
-                  <SectionHeading icon={Lightbulb} className="text-amber-700 dark:text-amber-400">
-                    Interview Notes
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={Lightbulb}>Interview Notes</SectionHeading>
                   <ul className="space-y-2.5">
                     {content.interviewNotes.map((note, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 shrink-0 mt-2" />
-                        <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">{note}</p>
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-2" style={{ backgroundColor: 'var(--accent)' }} />
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{note}</p>
                       </li>
                     ))}
                   </ul>
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── 7. When to Use ────────────────────────────────────────── */}
             {content.whenToUse && (
               <AnimatedConceptSection delay={0.4}>
-                <section className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 p-6">
-                  <SectionHeading icon={CheckCircle} className="text-emerald-700 dark:text-emerald-400">
-                    When to Use
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={CheckCircle}>When to Use</SectionHeading>
                   <TextContent text={content.whenToUse} />
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── 8. When NOT to Use ────────────────────────────────────── */}
             {content.whenNotToUse && (
               <AnimatedConceptSection delay={0.45}>
-                <section className="bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-200 dark:border-rose-800/50 p-6">
-                  <SectionHeading icon={XCircle} className="text-rose-700 dark:text-rose-400">
-                    When NOT to Use
-                  </SectionHeading>
+                <ContentCard>
+                  <SectionHeading icon={XCircle}>When NOT to Use</SectionHeading>
                   <TextContent text={content.whenNotToUse} />
-                </section>
+                </ContentCard>
               </AnimatedConceptSection>
             )}
 
-            {/* ── User Notes ────────────────────────────────────────────── */}
+            {/* My Notes */}
             <AnimatedConceptSection delay={0.5}>
-              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">My Notes</h2>
+              <ContentCard>
+                <h2 className="text-lg font-bold mb-4" style={{ color: 'var(--text)' }}>My Notes</h2>
                 <textarea
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
                   placeholder="Jot down anything you want to remember about this topic…"
                   rows={5}
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 resize-none transition-all duration-150 font-sans"
+                  className="w-full px-4 py-3 rounded-xl text-sm resize-none font-sans focus:outline-none transition-all duration-150"
+                  style={{
+                    backgroundColor: 'var(--surface-2)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--text)',
+                  }}
                 />
                 <div className="flex items-center justify-between mt-3">
-                  <span className="text-xs text-slate-400 dark:text-zinc-500">
+                  <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>
                     Notes are saved locally in your browser
                   </span>
                   <button
                     onClick={handleSaveNote}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
-                      noteSaved
-                        ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 border border-transparent'
-                    }`}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+                    style={noteSaved
+                      ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)', border: '1px solid var(--accent-border)' }
+                      : { backgroundColor: 'var(--accent)', color: '#fff', border: '1px solid transparent' }
+                    }
                   >
                     {noteSaved ? 'Saved!' : 'Save Note'}
                   </button>
                 </div>
-              </section>
+              </ContentCard>
             </AnimatedConceptSection>
 
-            {/* ── Prev / Next navigation ────────────────────────────────── */}
+            {/* Prev / Next */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
               {prevTopic ? (
                 <Link
                   href={`/learn/models/${prevTopic.id}`}
-                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-all duration-150"
+                  className="group flex flex-col gap-1 p-4 rounded-2xl transition-all duration-150"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
                 >
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 group-hover:text-indigo-500 transition-colors">
+                  <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-subtle)' }}>
                     <ChevronLeft className="w-3.5 h-3.5" />
                     Previous
                   </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
+                  <span className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: 'var(--text)' }}>
                     {prevTopic.title}
                   </span>
                 </Link>
-              ) : (
-                <div />
-              )}
+              ) : <div />}
 
               {nextTopic ? (
                 <Link
                   href={`/learn/models/${nextTopic.id}`}
-                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-indigo-300 dark:hover:border-indigo-700/60 transition-all duration-150 text-right"
+                  className="group flex flex-col gap-1 p-4 rounded-2xl transition-all duration-150 text-right"
+                  style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
                 >
-                  <span className="flex items-center justify-end gap-1.5 text-xs text-slate-500 dark:text-zinc-400 group-hover:text-indigo-500 transition-colors">
+                  <span className="flex items-center justify-end gap-1.5 text-xs" style={{ color: 'var(--text-subtle)' }}>
                     Next
                     <ChevronRight className="w-3.5 h-3.5" />
                   </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-indigo-700 dark:group-hover:text-indigo-300 transition-colors">
+                  <span className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: 'var(--text)' }}>
                     {nextTopic.title}
                   </span>
                 </Link>
-              ) : (
-                <div />
-              )}
+              ) : <div />}
             </div>
-          </main>
-        </div>
+
+          </div>
+        </main>
       </div>
     </div>
   );

@@ -459,93 +459,332 @@ Product.objects.aggregate(
   },
   {
     id: "create-update-delete",
-    title: "create(), update(), delete(), get_or_create(), update_or_create()",
+    title: "Create, Update & Delete — Complete Deep Dive",
     slug: "create-update-delete",
     category: "queries",
-    difficulty: "beginner",
-    description: "Creating, updating, and deleting records via the ORM — including convenience methods.",
+    difficulty: "intermediate",
+    description: "Every way to write data in Django: create(), save(), update(), delete(), bulk operations, atomic writes, signals, validators, upsert patterns — with full SQL translation and signal lifecycle.",
     content: {
-      explanation: "Django provides multiple ways to write data: create() for new records, update() for bulk field updates, delete() to remove records, and convenience methods get_or_create() and update_or_create() for upsert patterns.",
-      realExample: "A user registration creates a profile. A checkout process updates inventory stock. A cleanup job deletes old sessions. A webhook handler uses update_or_create to upsert subscription data.",
-      codeExample: `from myapp.models import Product, Category, Tag
+      explanation: `Django provides a rich layered API for writing data. Each method sits at a different level of abstraction and has different performance characteristics, signal behavior, and validator behavior.
 
-# ---- CREATE ----
-# Method 1: create() — INSERT in one step
+LAYER 1 — Python-level (runs validators, signals, auto_now):
+  instance.save()          → full_clean() only if you call it explicitly
+  Model.objects.create()   → shortcut for __init__() + save()
+
+LAYER 2 — SQL-level (bypasses Python entirely):
+  queryset.update()        → single UPDATE SQL, no Python, no signals
+  queryset.delete()        → single DELETE SQL, fires pre_delete / post_delete per object
+  bulk_create()            → one INSERT for many rows, skips signals by default
+  bulk_update()            → one UPDATE for many rows, skips signals
+
+LAYER 3 — Upsert (SELECT then INSERT or UPDATE):
+  get_or_create()          → SELECT, if not found → INSERT (atomic with unique constraint)
+  update_or_create()       → SELECT, then UPDATE or INSERT
+
+Signal lifecycle for save():
+  pre_save  → full ORM validation (if called) → DB INSERT/UPDATE → post_save
+
+Signal lifecycle for delete():
+  pre_delete → cascaded deletes → DB DELETE → post_delete`,
+
+      realExample: `E-commerce checkout flow:
+1. Order.objects.create(customer=user, total=basket.total) — creates the order, fires post_save which triggers a receipt queue task.
+2. product.save(update_fields=['stock']) — updates only the stock column; auto_now_modified fires correctly because save() is called.
+3. OrderItem.objects.bulk_create(line_items) — inserts all line items in one INSERT statement; 100x faster than looping save().
+4. transaction.atomic() wraps steps 1–3 so a payment failure rolls back everything atomically.
+5. Subscription.objects.update_or_create(user=user, defaults={'plan': 'pro'}) — upserts subscription data safely for webhook idempotency.`,
+
+      codeExample: `from django.db import models, transaction
+from django.core.exceptions import ValidationError
+from django.db.models.signals import pre_save, post_save, pre_delete, post_delete
+from django.dispatch import receiver
+
+# ─── THE MODEL ──────────────────────────────────────────────────────────────
+class Product(models.Model):
+    name       = models.CharField(max_length=200)
+    sku        = models.CharField(max_length=50, unique=True)
+    price      = models.DecimalField(max_digits=10, decimal_places=2)
+    stock      = models.PositiveIntegerField(default=0)
+    is_active  = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)   # set only on INSERT
+    updated_at = models.DateTimeField(auto_now=True)       # set on every save()
+
+    def clean(self):
+        # Custom validation — runs only when you call full_clean()
+        if self.price <= 0:
+            raise ValidationError({'price': 'Price must be positive.'})
+
+    def __str__(self):
+        return self.name
+
+
+# ─── SIGNALS ────────────────────────────────────────────────────────────────
+@receiver(pre_save, sender=Product)
+def before_product_save(sender, instance, created, **kwargs):
+    # 'created' is True only on INSERT (not yet in DB)
+    print(f"About to {'create' if instance.pk is None else 'update'} {instance.name}")
+
+@receiver(post_save, sender=Product)
+def after_product_save(sender, instance, created, **kwargs):
+    if created:
+        print(f"New product saved with pk={instance.pk}")
+    else:
+        print(f"Product {instance.pk} updated")
+
+@receiver(pre_delete, sender=Product)
+def before_product_delete(sender, instance, **kwargs):
+    print(f"About to delete product {instance.pk}")
+
+@receiver(post_delete, sender=Product)
+def after_product_delete(sender, instance, **kwargs):
+    # instance.pk is now None — the row is gone
+    print(f"Product deleted. Old pk was {instance.pk}")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ── CREATE ──────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Method 1 — create() — shortcut for __init__ + save()
+# SQL: INSERT INTO product (name, sku, price, ...) VALUES (...)
 product = Product.objects.create(
     name='Laptop',
+    sku='LAP-001',
     price=999.99,
-    stock=50
+    stock=50,
 )
-# Returns the saved instance with pk populated
+# Returns saved instance with pk populated. Fires pre_save + post_save.
 
-# Method 2: save()
-product = Product(name='Mouse', price=29.99)
-product.save()  # INSERT
+# Method 2 — instantiate then save()
+# Useful when you want to set fields conditionally before persisting
+product = Product(name='Mouse', sku='MOU-001', price=29.99)
+product.price = 25.00  # tweak before saving
+product.save()         # SQL: INSERT INTO product (...) VALUES (...)
+# Fires pre_save (instance.pk is None here → created=True) then post_save
 
-# ---- UPDATE ----
-# Single instance update — two DB queries (SELECT + UPDATE)
-product = Product.objects.get(pk=1)
-product.price = 899.99
-product.save()
-# Efficient — only update changed field:
-product.save(update_fields=['price'])
+# Method 3 — with full validation before save
+product = Product(name='', sku='BAD', price=-5)
+try:
+    product.full_clean()   # runs: field validation + unique checks + clean()
+    product.save()
+except ValidationError as e:
+    print(e.message_dict)  # {'name': ['This field cannot be blank.'], 'price': [...]}
+# Note: create() does NOT call full_clean() automatically — you must do it yourself
 
-# Bulk update — ONE UPDATE query, no Python objects created
-Product.objects.filter(category__name='Electronics').update(is_active=True)
-# UPDATE product SET is_active=TRUE WHERE category_id IN (...)
-# NOTE: bypasses save(), signals, and auto_now fields
-
-# ---- DELETE ----
-# Delete single instance
-product = Product.objects.get(pk=1)
-product.delete()  # Returns (count, {model: count}) dict
-
-# Bulk delete
-deleted_count, _ = Product.objects.filter(is_active=False).delete()
-
-# ---- GET OR CREATE ----
-# Returns (instance, created) tuple
-category, created = Category.objects.get_or_create(
-    name='Electronics',          # Lookup fields
-    defaults={'slug': 'electronics'}  # Only set on creation
+# Method 4 — get_or_create() — SELECT then INSERT if not found
+# Returns: (instance, created_bool)
+# SQL: SELECT ... WHERE sku='LAP-001' LIMIT 1
+#      INSERT INTO product (...) VALUES (...) [only if not found]
+product, created = Product.objects.get_or_create(
+    sku='LAP-001',                          # lookup fields (must uniquely identify a row)
+    defaults={                               # only applied on creation, never on lookup
+        'name': 'Laptop',
+        'price': 999.99,
+        'stock': 50,
+    }
 )
-if created:
-    print(f"New category created: {category.pk}")
-else:
-    print(f"Existing category found: {category.pk}")
+print(f"Created: {created}")  # True if INSERT happened, False if found existing
 
-# ---- UPDATE OR CREATE ----
+# Race condition note: get_or_create is NOT atomic on its own.
+# Two concurrent processes can both pass the SELECT (not found) and both attempt INSERT.
+# Defense: rely on a UNIQUE constraint — only one INSERT will succeed, the other raises IntegrityError.
+# Django's get_or_create catches IntegrityError and retries the GET automatically (since Django 3.x).
+
+# Method 5 — update_or_create() — SELECT then UPDATE or INSERT
+# Useful for idempotent upserts (webhook handlers, data imports)
 product, created = Product.objects.update_or_create(
-    sku='LAP001',                # Lookup field (must be unique)
-    defaults={                   # Fields to set on create OR update
+    sku='LAP-001',                          # lookup — must uniquely identify the row
+    defaults={                               # applied on BOTH create and update
         'name': 'Laptop Pro',
         'price': 1299.99,
     }
 )
+# On first call: INSERT  (created=True)
+# On second call: UPDATE price and name  (created=False)
 
-# ---- ATOMIC GET OR CREATE (race condition safe) ----
-# get_or_create uses SELECT then INSERT — can have race conditions
-# in high concurrency. Always wrap in select_for_update or rely on
-# unique constraint + IntegrityError handling for true atomicity.`,
-      outputExplanation: "create() and save() run full_clean() validators only if you call it explicitly. update() bypasses Python entirely — no signals, no save(), no auto_now. get_or_create() returns a tuple (instance, created_bool).",
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ── UPDATE ──────────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Method 1 — instance.save() — two queries: SELECT + UPDATE
+# Fires pre_save + post_save. auto_now fields ARE updated. Runs custom save() logic.
+product = Product.objects.get(pk=1)         # Query 1: SELECT
+product.price = 899.99
+product.save()                              # Query 2: UPDATE product SET price=899.99, updated_at=now(), ... WHERE id=1
+# WARNING: This updates ALL columns, not just price — stale overwrites are possible if another process modified a different field
+
+# Method 2 — save(update_fields=[...]) — TARGET specific columns only
+# SQL: UPDATE product SET price=899.99, updated_at=now() WHERE id=1
+# Still fires pre_save + post_save. auto_now IS included automatically.
+product = Product.objects.get(pk=1)
+product.price = 799.99
+product.save(update_fields=['price'])       # Only price and auto_now fields are updated
+# Best practice for concurrent updates — minimizes risk of overwriting others' changes
+
+# Method 3 — queryset.update() — ONE SQL UPDATE, no Python
+# SQL: UPDATE product SET is_active=FALSE WHERE price < 10.00
+# DOES NOT fire signals. DOES NOT update auto_now. DOES NOT call save() or clean().
+updated_count = Product.objects.filter(price__lt=10.00).update(is_active=False)
+print(f"Updated {updated_count} rows")
+# Use when: bulk updates, performance critical, no signal/validator logic needed
+
+# Method 4 — F() expressions in update() — atomic field math
+from django.db.models import F
+# SQL: UPDATE product SET stock = stock - 1 WHERE id=1
+# Avoids read-modify-write race condition — the math happens in the database
+Product.objects.filter(pk=1).update(stock=F('stock') - 1)
+
+# Method 5 — bulk_update() — update specific fields on a list of instances
+products = list(Product.objects.filter(category='electronics'))
+for p in products:
+    p.price = round(p.price * 0.9, 2)  # 10% discount in Python
+Product.objects.bulk_update(products, fields=['price'])
+# SQL: one UPDATE per batch (default batch_size=None → one query)
+# Does NOT fire signals. Does NOT update auto_now.
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ── DELETE ──────────────────────────────────────────════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Method 1 — instance.delete() — fires pre_delete + post_delete
+product = Product.objects.get(pk=1)
+count, detail = product.delete()
+# count = total rows deleted (including cascade-deleted related rows)
+# detail = {'myapp.Product': 1, 'myapp.OrderItem': 3}  ← cascade deletions
+print(f"Deleted {count} rows: {detail}")
+
+# Method 2 — queryset.delete() — bulk, fires signals PER OBJECT
+# SQL: DELETE FROM product WHERE is_active=FALSE
+deleted_count, breakdown = Product.objects.filter(is_active=False).delete()
+# Django first fetches PKs, then deletes. pre_delete/post_delete fire for each.
+# For huge querysets, this can be slow — Django loads all PKs into memory first.
+
+# Method 3 — queryset._raw_delete() — truly bulk with no signals (internal API, use carefully)
+# For huge datasets where you don't need signals, prefer raw SQL or use a Celery task
+
+# CASCADE BEHAVIOR:
+# ON CASCADE DELETE: Django handles in Python (fires signals for related objects)
+# ON_DELETE=SET_NULL / SET_DEFAULT: Django updates the related rows in SQL
+
+# Soft delete pattern (never really DELETE — just mark inactive)
+class SoftDeleteManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(deleted_at__isnull=True)
+
+class SoftDeleteModel(models.Model):
+    deleted_at = models.DateTimeField(null=True, blank=True)
+    objects = SoftDeleteManager()     # default manager — excludes deleted
+    all_objects = models.Manager()    # access all including deleted
+
+    def delete(self, *args, **kwargs):
+        from django.utils import timezone
+        self.deleted_at = timezone.now()
+        self.save(update_fields=['deleted_at'])
+
+    def hard_delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ── ATOMIC CREATE / UPDATE / DELETE ──────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Always wrap multi-step writes in atomic() so a failure rolls back everything
+def checkout(user, cart_items):
+    with transaction.atomic():
+        # Step 1: Lock inventory rows — prevents concurrent over-sells
+        product_pks = [item['product_pk'] for item in cart_items]
+        products = {
+            p.pk: p
+            for p in Product.objects.select_for_update().filter(pk__in=product_pks)
+        }
+
+        # Step 2: Validate stock
+        for item in cart_items:
+            product = products[item['product_pk']]
+            if product.stock < item['quantity']:
+                raise ValueError(f"Insufficient stock for {product.name}")
+
+        # Step 3: Create the order
+        from orders.models import Order, OrderItem
+        order = Order.objects.create(user=user, status='pending')
+
+        # Step 4: Create all line items in one INSERT
+        line_items = [
+            OrderItem(order=order, product=products[i['product_pk']], qty=i['quantity'])
+            for i in cart_items
+        ]
+        OrderItem.objects.bulk_create(line_items)
+
+        # Step 5: Deduct stock atomically
+        for item in cart_items:
+            Product.objects.filter(pk=item['product_pk']).update(
+                stock=F('stock') - item['quantity']
+            )
+
+        # Step 6: Side effects run ONLY after commit — never on rollback
+        transaction.on_commit(lambda: send_order_confirmation.delay(order.pk))
+
+        return order
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ── SIGNAL BEHAVIOR SUMMARY TABLE ────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Method                  | pre_save | post_save | pre_delete | post_delete | auto_now | full_clean
+# ------------------------|----------|-----------|------------|-------------|----------|-----------
+# instance.save()         |    YES   |    YES    |     -      |      -      |   YES    |   NO*
+# create()                |    YES   |    YES    |     -      |      -      |   YES    |   NO*
+# queryset.update()       |    NO    |    NO     |     -      |      -      |   NO     |   NO
+# bulk_create()           |    NO    |    NO     |     -      |      -      |   YES**  |   NO
+# bulk_update()           |    NO    |    NO     |     -      |      -      |   NO     |   NO
+# instance.delete()       |    -     |    -      |    YES     |     YES     |   -      |   -
+# queryset.delete()       |    -     |    -      |    YES     |     YES     |   -      |   -
+# get_or_create()         |    YES   |    YES    |     -      |      -      |   YES    |   NO*
+# update_or_create()      |    YES   |    YES    |     -      |      -      |   YES    |   NO*
+# * Call full_clean() manually before save() to run validators
+# ** auto_now_add is set by Django during bulk_create on supported backends`,
+
+      outputExplanation: `create() is syntactic sugar for Product(**kwargs).save() — it fires all signals and respects auto_now fields. queryset.update() is pure SQL — it generates one UPDATE statement and bypasses Python entirely, meaning signals never fire and auto_now fields are NOT updated. bulk_create() uses a single INSERT statement, skips pre_save/post_save signals, and does not populate PKs on MySQL/SQLite (only PostgreSQL returns PKs). get_or_create() is implemented as SELECT then INSERT — it is NOT a true SQL UPSERT. Django wraps it in atomic() internally and retries on IntegrityError to handle the race condition case.`,
+
       commonMistakes: [
-        "Using update() and expecting auto_now fields to update — they don't because update() bypasses save().",
-        "Using get_or_create() without wrapping in atomic() in concurrent environments — two processes can both pass the GET check and both attempt the CREATE.",
-        "Calling product.save() after bulk update() — the in-memory object is stale, save() would overwrite the bulk update."
+        "Using queryset.update() and expecting updated_at (auto_now) to refresh — it doesn't. Call save() or add updated_at=timezone.now() explicitly to the update() call.",
+        "Calling instance.save() after queryset.update() — the in-memory object is stale. The save() will overwrite whatever the bulk update changed with old values.",
+        "Using get_or_create() without a UNIQUE constraint on the lookup fields — the race condition leads to IntegrityError that Django cannot safely retry.",
+        "Not using select_for_update() when doing check-then-update in concurrent code — two requests can both read stock=1, both decrement to 0, and sell the same last item twice.",
+        "Sending emails or triggering Celery tasks inside atomic() directly — if the transaction rolls back, the email was already sent. Always use transaction.on_commit().",
+        "Using bulk_create() and expecting PKs to be populated on MySQL/SQLite — only PostgreSQL sets PKs on bulk_create. Refresh the queryset instead.",
+        "Using update_or_create() on non-unique lookup fields — it will raise MultipleObjectsReturned if more than one row matches.",
+        "Assuming full_clean() runs automatically — Django never calls full_clean() for you in create() or save(). You must call it explicitly before saving if you want validators to run."
       ],
+
       interviewNotes: [
-        "create() = instantiate + save() in one call.",
-        "update() is a single SQL UPDATE — bypasses save(), signals, and auto_now.",
-        "delete() on a QuerySet returns (total_count, {model_label: count}) — useful for logging.",
-        "get_or_create() defaults= are only applied on creation, not on get.",
-        "update_or_create() defaults= are applied on BOTH create and update."
+        "create() = __init__() + save() in one call. Fires pre_save and post_save signals.",
+        "queryset.update() generates a single SQL UPDATE. No Python instantiation, no signals, no auto_now. Returns number of affected rows.",
+        "save(update_fields=['field']) sends only the listed columns in the UPDATE — prevents stale overwrites in concurrent code.",
+        "bulk_create() inserts many rows in one SQL statement. Skips signals. PKs only populated on PostgreSQL.",
+        "get_or_create() is SELECT → (INSERT if missing). Returns (instance, created_bool). Not a DB-level UPSERT.",
+        "update_or_create() defaults= applies on both create and update. get_or_create() defaults= only applies on create.",
+        "select_for_update() adds FOR UPDATE to the SELECT — locks rows so concurrent transactions must wait. Must be inside atomic().",
+        "transaction.on_commit() runs callbacks after the surrounding atomic() successfully commits. Safe for emails, Celery tasks, webhooks.",
+        "Soft delete = set deleted_at timestamp and filter it out in the default manager. Hard delete removes the row.",
+        "F() expressions in update() do math in the database atomically — avoids read-modify-write race conditions.",
+        "The signal lifecycle for save(): pre_save → DB INSERT/UPDATE → post_save. For delete(): pre_delete → DB DELETE → post_delete."
       ],
-      whenToUse: "get_or_create() for idempotent creation logic. update_or_create() for upsert patterns (webhook handlers, data imports). Bulk update() for performance-critical mass updates.",
-      whenNotToUse: "Do not use update() when you need signals, auto_now, or validator logic to run — use save() instead."
+
+      whenToUse: "Use save()/create() when you need signals, validators, or auto_now to fire. Use queryset.update() for performance-critical mass updates where Python logic is not needed. Use bulk_create()/bulk_update() for large data imports. Use get_or_create() for idempotent creation. Use update_or_create() for upsert patterns in webhook handlers or background sync jobs. Always wrap multi-step writes in transaction.atomic().",
+
+      whenNotToUse: "Do not use queryset.update() when signals, auto_now, or custom save() logic must run. Do not use bulk_create() when you need signals or guaranteed PKs on MySQL/SQLite. Do not use get_or_create()/update_or_create() without a UNIQUE constraint on the lookup fields. Do not trigger side effects (email, Celery) inside atomic() directly — use on_commit() instead."
     },
-    tags: ["create", "update", "delete", "get_or_create", "update_or_create", "queryset"],
+    tags: ["create", "update", "delete", "atomic", "signals", "bulk_create", "get_or_create", "update_or_create", "select_for_update", "full_clean", "queryset"],
     order: 7,
-    estimatedMinutes: 12
+    estimatedMinutes: 25
   },
   {
     id: "bulk-operations",

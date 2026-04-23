@@ -1,957 +1,800 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect, use } from 'react'
+import { useState, useCallback, useRef, useEffect, use, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import {
-  ChevronLeft,
-  ChevronRight,
-  CheckCircle,
-  Lightbulb,
-  Eye,
-  EyeOff,
-  BookmarkPlus,
-  Bookmark,
-  Code,
-  FileText,
-  Database,
-  Play,
-  AlertCircle,
-  CheckCheck,
-  XCircle,
-  AlertTriangle,
-  Loader2,
-  X,
+  ChevronLeft, ChevronRight, CheckCircle, Lightbulb, Eye, EyeOff,
+  BookmarkPlus, Bookmark, Code2, FileText, Database, Play, AlertCircle,
+  CheckCheck, XCircle, AlertTriangle, Loader2, X, Terminal, RotateCcw,
+  Copy, Check, ChevronDown, ChevronUp,
 } from 'lucide-react'
+import { python } from '@codemirror/lang-python'
+import { keymap, EditorView } from '@codemirror/view'
+import { vscodeDark } from '@uiw/codemirror-theme-vscode'
+import { githubLight } from '@uiw/codemirror-theme-github'
+import { Group as PanelGroup, Panel, Separator as PanelResizeHandle } from 'react-resizable-panels'
 import { exercises } from '@/data/exercises'
 import { useProgress } from '@/hooks/useProgress'
-import CodeBlock from '@/components/ui/CodeBlock'
 import Badge from '@/components/ui/Badge'
 import { checkAnswer } from '@/lib/answerChecker'
+import { useAppSettings } from '@/hooks/useAppSettings'
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const CodeMirror = dynamic(() => import('@uiw/react-codemirror'), { ssr: false })
 
-function SectionHeading({ icon: Icon, children }) {
+// ─── CodeMirror theme override — follows app CSS variables ────────────────────
+const cmAppTheme = EditorView.theme({
+  '&': { height: '100%', backgroundColor: 'transparent' },
+  '.cm-scroller': { overflow: 'auto' },
+  '.cm-gutters': {
+    backgroundColor: 'var(--surface)',
+    borderRight: '1px solid var(--border)',
+    color: 'var(--text-subtle)',
+    minWidth: '40px',
+  },
+  '.cm-gutterElement': { padding: '0 8px 0 4px !important' },
+  '.cm-lineNumbers .cm-gutterElement': { color: 'var(--text-subtle)' },
+  '.cm-activeLineGutter': { backgroundColor: 'var(--surface-2)' },
+  '.cm-activeLine': { backgroundColor: 'color-mix(in srgb, var(--accent) 5%, transparent)' },
+  '.cm-cursor, .cm-dropCursor': { borderLeftColor: 'var(--accent)', borderLeftWidth: '2px' },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, &.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground': {
+    backgroundColor: 'var(--accent-light)',
+  },
+  '.cm-content': { caretColor: 'var(--accent)', padding: '12px 0' },
+  '.cm-line': { padding: '0 16px' },
+  '.cm-placeholder': { color: 'var(--text-subtle)' },
+})
+
+// Font extension — uses the app's monospace stack
+const cmFont = EditorView.theme({
+  '.cm-content, .cm-gutters': {
+    fontFamily: '"JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, monospace',
+    fontSize: '13px',
+    lineHeight: '1.75',
+  },
+})
+
+// ─── Simulated output ─────────────────────────────────────────────────────────
+function buildSimulatedOutput(exercise) {
+  const sol = (exercise.solution || '').trim()
+  const expected = exercise.expectedResult || ''
+  if (sol.includes('.count()') || expected.toLowerCase().includes('count')) return `>>> ${sol}\n3`
+  if (sol.includes('.exists()')) return `>>> ${sol}\nTrue`
+  if (sol.includes('.values_list(') && sol.includes('flat=True'))
+    return `>>> ${sol}\n<QuerySet ['Harry Potter', '1984', 'Dune']>`
+  if (sol.includes('.values('))
+    return `>>> ${sol}\n<QuerySet [\n  {'id': 1, 'title': 'Harry Potter'},\n  {'id': 2, 'title': '1984'}\n]>`
+  if (sol.includes('.aggregate(')) {
+    const m = sol.match(/\w+=/); const k = m ? m[0].slice(0, -1) : 'result'
+    return `>>> ${sol}\n{'${k}': 12.99}`
+  }
+  if (sol.includes('.annotate('))
+    return `>>> ${sol}\n<QuerySet [\n  <Book: Harry Potter (count=5)>,\n  <Book: 1984 (count=3)>\n]>`
+  if (sol.includes('.first()') || sol.includes('.get(')) {
+    const model = sol.match(/(\w+)\.objects/)?.[1] || 'Object'
+    return `>>> ${sol}\n<${model}: ${model} object (1)>`
+  }
+  if (sol.includes('.last()')) {
+    const model = sol.match(/(\w+)\.objects/)?.[1] || 'Object'
+    return `>>> ${sol}\n<${model}: ${model} object (3)>`
+  }
+  if (sol.includes('.delete()')) return `>>> ${sol}\n(1, {'myapp.Book': 1})`
+  if (sol.includes('.update(')) return `>>> ${sol}\n2`
+  if (sol.includes('.order_by('))
+    return `>>> ${sol}\n<QuerySet [\n  <Book: Animal Farm>,\n  <Book: 1984>,\n  <Book: Harry Potter>\n]>`
+  if (sol.includes('.filter(') || sol.includes('.exclude(')) {
+    const count = expected.match(/(\d+)\s+book/i)?.[1] || '2'
+    const model = sol.match(/(\w+)\.objects/)?.[1] || 'Book'
+    const rows = Array.from({ length: parseInt(count) || 2 }, (_, i) => `  <${model}: ${model} object (${i + 1})>`).join(',\n')
+    return `>>> ${sol}\n<QuerySet [\n${rows}\n]>`
+  }
+  const model = sol.match(/(\w+)\.objects/)?.[1] || 'Object'
+  return `>>> ${sol}\n<QuerySet [\n  <${model}: ${model} object (1)>,\n  <${model}: ${model} object (2)>,\n  <${model}: ${model} object (3)>\n]>`
+}
+
+// ─── Result config ────────────────────────────────────────────────────────────
+const STATUS_CFG = {
+  correct: { icon: CheckCircle,  color: '#10b981', bg: 'rgba(16,185,129,.10)', border: 'rgba(16,185,129,.28)', label: 'All tests passed',   bar: '#10b981' },
+  close:   { icon: AlertCircle,  color: '#f59e0b', bg: 'rgba(245,158,11,.10)', border: 'rgba(245,158,11,.28)', label: 'Almost there',       bar: '#f59e0b' },
+  partial: { icon: AlertTriangle,color: '#f97316', bg: 'rgba(249,115,22,.10)', border: 'rgba(249,115,22,.28)', label: 'Partial match',      bar: '#f97316' },
+  wrong:   { icon: XCircle,      color: '#ef4444', bg: 'rgba(239,68,68,.10)', border:  'rgba(239,68,68,.28)',  label: 'Tests failed',       bar: '#ef4444' },
+  empty:   { icon: AlertCircle,  color: '#6b7280', bg: 'rgba(107,114,128,.08)',border: 'rgba(107,114,128,.20)',label: 'No answer',           bar: '#6b7280' },
+}
+
+// ─── Python syntax highlighter (for sample data blocks) ──────────────────────
+const PY_RE = /('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")|(\b(?:True|False|None|import|from|as|class|def|return|for|while|if|else|elif|in|not|and|or|is|with|pass)\b)|(\b\d+(?:\.\d+)?\b)|([a-zA-Z_]\w*(?=\s*\())/g
+const PY_COL = { s: '#86efac', k: '#c084fc', n: '#fb923c', f: '#93c5fd' }
+
+function pyHighlight(code) {
+  const out = []; let last = 0; let key = 0; let m
+  PY_RE.lastIndex = 0
+  while ((m = PY_RE.exec(code)) !== null) {
+    if (m.index > last) out.push(<span key={key++}>{code.slice(last, m.index)}</span>)
+    const col = m[1] ? PY_COL.s : m[2] ? PY_COL.k : m[3] ? PY_COL.n : PY_COL.f
+    out.push(<span key={key++} style={{ color: col }}>{m[0]}</span>)
+    last = PY_RE.lastIndex
+  }
+  if (last < code.length) out.push(<span key={key++}>{code.slice(last)}</span>)
+  return out
+}
+
+// ─── Resize handle ────────────────────────────────────────────────────────────
+function ResizeHandle({ direction = 'horizontal' }) {
+  const [hov, setHov] = useState(false)
+  const isH = direction === 'horizontal'
+  const lineStyle = isH
+    ? { position:'absolute', top:0, bottom:0, left:'50%', width:1, transform:'translateX(-50%)' }
+    : { position:'absolute', left:0, right:0, top:'50%', height:1, transform:'translateY(-50%)' }
   return (
-    <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-wide mb-3">
-      <Icon className="w-4 h-4 text-slate-400 dark:text-zinc-500" aria-hidden="true" />
-      {children}
-    </h3>
+    <PanelResizeHandle
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      className={`relative flex items-center justify-center shrink-0 ${isH ? 'w-3 cursor-col-resize' : 'h-3 cursor-row-resize'}`}
+      style={{ backgroundColor: 'transparent' }}
+    >
+      {/* Divider line */}
+      <div style={{
+        ...lineStyle,
+        backgroundColor: hov ? 'var(--accent)' : 'var(--border)',
+        transition: 'background-color .15s',
+      }} />
+      {/* Grip knob */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        display: 'flex', flexDirection: isH ? 'column' : 'row', gap: 3,
+        padding: isH ? '5px 3px' : '3px 5px',
+        borderRadius: 5,
+        backgroundColor: hov ? 'var(--surface-2)' : 'var(--surface)',
+        border: '1px solid',
+        borderColor: hov ? 'var(--accent-border)' : 'var(--border)',
+        transition: 'all .15s',
+        boxShadow: hov ? '0 1px 4px rgba(0,0,0,.15)' : 'none',
+      }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{
+            width: 3, height: 3, borderRadius: '50%',
+            backgroundColor: hov ? 'var(--accent)' : 'var(--text-subtle)',
+            transition: 'background-color .15s',
+          }} />
+        ))}
+      </div>
+    </PanelResizeHandle>
   )
+}
+
+// ─── Small helpers ────────────────────────────────────────────────────────────
+function CopyBtn({ text }) {
+  const [ok, setOk] = useState(false)
+  return (
+    <button
+      onClick={() => navigator.clipboard.writeText(text || '').then(() => { setOk(true); setTimeout(() => setOk(false), 1600) })}
+      className="p-1.5 rounded transition-colors"
+      style={{ color: 'var(--text-muted)' }}
+      onMouseEnter={e => { e.currentTarget.style.color='var(--text)'; e.currentTarget.style.backgroundColor='var(--surface-2)' }}
+      onMouseLeave={e => { e.currentTarget.style.color='var(--text-muted)'; e.currentTarget.style.backgroundColor='' }}
+    >
+      {ok ? <Check className="w-3.5 h-3.5" style={{ color:'#10b981' }} /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  )
+}
+
+function SectionLabel({ children }) {
+  return <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text-subtle)' }}>{children}</p>
 }
 
 function Divider() {
-  return <hr className="border-slate-200 dark:border-zinc-800" />
-}
-
-// ─── TestResultPanel ──────────────────────────────────────────────────────────
-
-const STATUS_CONFIG = {
-  correct: {
-    bg: 'bg-green-50 dark:bg-green-900/20',
-    border: 'border-green-200 dark:border-green-700',
-    icon: CheckCircle,
-    iconColor: 'text-green-600 dark:text-green-400',
-    label: 'Correct!',
-    barColor: 'bg-green-500',
-  },
-  close: {
-    bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-    border: 'border-yellow-200 dark:border-yellow-700',
-    icon: AlertCircle,
-    iconColor: 'text-yellow-600 dark:text-yellow-400',
-    label: 'Almost There!',
-    barColor: 'bg-yellow-500',
-  },
-  partial: {
-    bg: 'bg-orange-50 dark:bg-orange-900/20',
-    border: 'border-orange-200 dark:border-orange-700',
-    icon: AlertTriangle,
-    iconColor: 'text-orange-600 dark:text-orange-400',
-    label: 'Partial Credit',
-    barColor: 'bg-orange-500',
-  },
-  wrong: {
-    bg: 'bg-red-50 dark:bg-red-900/20',
-    border: 'border-red-200 dark:border-red-700',
-    icon: XCircle,
-    iconColor: 'text-red-600 dark:text-red-400',
-    label: 'Not Quite',
-    barColor: 'bg-red-500',
-  },
-  empty: {
-    bg: 'bg-slate-50 dark:bg-zinc-900',
-    border: 'border-slate-200 dark:border-zinc-700',
-    icon: AlertCircle,
-    iconColor: 'text-slate-500',
-    label: 'Empty',
-    barColor: 'bg-slate-400',
-  },
-}
-
-function TestResultPanel({ result, onDismiss }) {
-  const cfg = STATUS_CONFIG[result.status] ?? STATUS_CONFIG.wrong
-  const Icon = cfg.icon
-
-  const hasDetails =
-    result.details &&
-    (result.details.modelMatch !== undefined ||
-      result.details.methodsMatch !== undefined ||
-      result.details.argsMatch !== undefined)
-
-  return (
-    <div
-      className={[
-        'rounded-2xl border p-5 space-y-4 transition-all duration-200',
-        cfg.bg,
-        cfg.border,
-      ].join(' ')}
-      role="region"
-      aria-label="Test result"
-    >
-      {/* Header row */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Icon className={['w-6 h-6 shrink-0', cfg.iconColor].join(' ')} aria-hidden="true" />
-          <div>
-            <p className={['text-base font-bold', cfg.iconColor].join(' ')}>{cfg.label}</p>
-            <p className="text-sm text-slate-700 dark:text-zinc-300 leading-snug mt-0.5">
-              {result.feedback}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onDismiss}
-          aria-label="Dismiss result"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-zinc-700/50 transition-colors shrink-0"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Score bar */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-zinc-400">
-          <span>Score</span>
-          <span>{result.score}/100</span>
-        </div>
-        <div className="h-2 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
-          <div
-            className={['h-full rounded-full transition-all duration-500', cfg.barColor].join(' ')}
-            style={{ width: `${result.score}%` }}
-            role="progressbar"
-            aria-valuenow={result.score}
-            aria-valuemin={0}
-            aria-valuemax={100}
-          />
-        </div>
-      </div>
-
-      {/* Issues list */}
-      {result.issues && result.issues.length > 0 && (
-        <ul className="space-y-1.5 pl-1">
-          {result.issues.map((issue, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-zinc-300">
-              <span className="mt-1 w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0" aria-hidden="true" />
-              {issue}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Detail chips — model / methods / args */}
-      {hasDetails && (
-        <div className="flex flex-wrap gap-2 pt-1 border-t border-current/10">
-          {result.details.modelMatch !== undefined && (
-            <DetailChip label="Model" pass={result.details.modelMatch} />
-          )}
-          {result.details.methodsMatch !== undefined && (
-            <DetailChip label="Methods" pass={result.details.methodsMatch} />
-          )}
-          {result.details.argsMatch !== undefined && (
-            <DetailChip label="Arguments" pass={result.details.argsMatch} />
-          )}
-        </div>
-      )}
-
-      {/* Celebration message */}
-      {result.status === 'correct' && (
-        <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-100 dark:bg-green-800/30 border border-green-200 dark:border-green-700/50">
-          <CheckCheck className="w-4 h-4 text-green-600 dark:text-green-400" aria-hidden="true" />
-          <p className="text-sm font-semibold text-green-700 dark:text-green-300">
-            Excellent work! This exercise has been marked as complete.
-          </p>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DetailChip({ label, pass }) {
-  return (
-    <span
-      className={[
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border',
-        pass
-          ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
-          : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800',
-      ].join(' ')}
-    >
-      {pass ? (
-        <CheckCircle className="w-3 h-3" aria-hidden="true" />
-      ) : (
-        <XCircle className="w-3 h-3" aria-hidden="true" />
-      )}
-      {label}
-    </span>
-  )
+  return <div className="border-t" style={{ borderColor: 'var(--border)' }} />
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-
-export default function ExerciseDetailPage({ params }) {
+export default function ExercisePage({ params }) {
   const { id } = use(params)
   const router = useRouter()
+  const { isDark: appDark } = useAppSettings()
 
-  // Find the exercise
-  const exerciseIndex = exercises.findIndex((e) => e.id === id)
-  const exercise = exercises[exerciseIndex] ?? null
+  const idx = exercises.findIndex(e => e.id === id)
+  const exercise = exercises[idx] ?? null
+  const prev = idx > 0 ? exercises[idx - 1] : null
+  const next = idx < exercises.length - 1 ? exercises[idx + 1] : null
 
-  const prevExercise = exerciseIndex > 0 ? exercises[exerciseIndex - 1] : null
-  const nextExercise = exerciseIndex < exercises.length - 1 ? exercises[exerciseIndex + 1] : null
+  const { markExerciseComplete, isExerciseComplete, toggleBookmark, isBookmarked, saveNote, getNote } = useProgress()
 
-  const {
-    markExerciseComplete,
-    isExerciseComplete,
-    toggleBookmark,
-    isBookmarked,
-    saveNote,
-    getNote,
-  } = useProgress()
-
-  // ─── Local state ───────────────────────────────────────────────────────────
-  const [userCode, setUserCode] = useState('')
+  const [code, setCode]           = useState('')
+  const [tab, setTab]             = useState('problem')
+  const [outTab, setOutTab]       = useState('expected')
   const [showHints, setShowHints] = useState(false)
-  const [currentHintIndex, setCurrentHintIndex] = useState(0)
-  const [showSolution, setShowSolution] = useState(false)
-  const [showExplanation, setShowExplanation] = useState(false)
-  const [noteText, setNoteText] = useState('')
+  const [hintIdx, setHintIdx]     = useState(0)
+  const [showSol, setShowSol]     = useState(false)
+  const [showExp, setShowExp]     = useState(false)
+  const [showData, setShowData]   = useState(false)
+  const [altSolTab, setAltSolTab] = useState('primary')
+  const [result, setResult]       = useState(null)
+  const [running, setRunning]     = useState(false)
+  const [noteText, setNoteText]   = useState('')
   const [noteSaved, setNoteSaved] = useState(false)
-  const [schemaOpen, setSchemaOpen] = useState(true)
-  const [sampleDataOpen, setSampleDataOpen] = useState(true)
-  const [activeSolutionTab, setActiveSolutionTab] = useState('primary')
+  const [mounted, setMounted]     = useState(false)
 
-  // Submit & Test state
-  const [testResult, setTestResult] = useState(null)
-  const [isRunning, setIsRunning] = useState(false)
-  const [hasSubmitted, setHasSubmitted] = useState(false)
+  const noteSaveTimer = useRef(null)
+  const submitRef     = useRef(null)
 
-  const noteSaveTimerRef = useRef(null)
-  const editorRef = useRef(null)
+  const done      = exercise ? isExerciseComplete(exercise.id) : false
+  const bookmarked= exercise ? isBookmarked(exercise.id) : false
+  const hints     = exercise?.hints ?? []
+  const revealed  = showHints ? hintIdx + 1 : 0
+  const simOutput = exercise ? buildSimulatedOutput(exercise) : ''
+  const isDark    = mounted ? appDark : true
 
-  const isCompleted = exercise ? isExerciseComplete(exercise.id) : false
-  const bookmarked = exercise ? isBookmarked(exercise.id) : false
+  useEffect(() => { setMounted(true) }, [])
 
-  // Load saved note on mount / when id changes
   useEffect(() => {
-    if (exercise) {
-      setNoteText(getNote(exercise.id))
-    }
-    // Reset panel state when navigating between exercises
-    setUserCode('')
-    setShowHints(false)
-    setCurrentHintIndex(0)
-    setShowSolution(false)
-    setShowExplanation(false)
-    setNoteSaved(false)
-    setSchemaOpen(true)
-    setSampleDataOpen(true)
-    setActiveSolutionTab('primary')
-    // Reset submit state
-    setTestResult(null)
-    setIsRunning(false)
-    setHasSubmitted(false)
+    if (exercise) setNoteText(getNote(exercise.id))
+    setCode(''); setTab('problem'); setOutTab('expected')
+    setShowHints(false); setHintIdx(0); setShowSol(false)
+    setShowExp(false); setShowData(false); setResult(null)
+    setRunning(false); setAltSolTab('primary'); setNoteSaved(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
-  // ─── Submit & Test ────────────────────────────────────────────────────────
   const handleSubmit = useCallback(() => {
-    if (!userCode.trim()) return
-    setIsRunning(true)
-    setHasSubmitted(false)
-    setTestResult(null)
-
-    // Simulate a brief "running" delay for better UX
+    if (!code.trim()) return
+    setRunning(true); setResult(null)
     setTimeout(() => {
-      const result = checkAnswer(
-        userCode,
-        exercise.solution,
-        exercise.alternativeSolutions || [],
-      )
-      setTestResult(result)
-      setHasSubmitted(true)
-      setIsRunning(false)
+      const r = checkAnswer(code, exercise.solution, exercise.alternativeSolutions || [])
+      setResult(r); setRunning(false); setOutTab('result')
+      if (r.status === 'correct' && !isExerciseComplete(exercise.id)) markExerciseComplete(exercise.id)
+    }, 600)
+  }, [code, exercise, isExerciseComplete, markExerciseComplete])
 
-      // Auto-mark complete if correct
-      if (result.status === 'correct' && !isExerciseComplete(exercise.id)) {
-        markExerciseComplete(exercise.id)
-      }
-    }, 800)
-  }, [userCode, exercise, isExerciseComplete, markExerciseComplete])
+  useEffect(() => { submitRef.current = handleSubmit }, [handleSubmit])
 
-  // ─── Keyboard handler (Tab + Ctrl/Cmd+Enter) ───────────────────────────────
-  const handleKeyDown = useCallback(
-    (e) => {
-      // Submit shortcut
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault()
-        handleSubmit()
-        return
-      }
+  const handleNote = e => {
+    setNoteText(e.target.value); setNoteSaved(false)
+    clearTimeout(noteSaveTimer.current)
+    noteSaveTimer.current = setTimeout(() => { saveNote(exercise.id, e.target.value); setNoteSaved(true) }, 800)
+  }
 
-      // Tab indentation
-      if (e.key === 'Tab') {
-        e.preventDefault()
-        const start = e.target.selectionStart
-        const end = e.target.selectionEnd
-        const newValue = userCode.substring(0, start) + '    ' + userCode.substring(end)
-        setUserCode(newValue)
-        requestAnimationFrame(() => {
-          if (editorRef.current) {
-            editorRef.current.selectionStart = editorRef.current.selectionEnd = start + 4
-          }
-        })
-      }
-    },
-    [userCode, handleSubmit],
+  const revealNextHint = () => {
+    if (!showHints) { setShowHints(true); setHintIdx(0) }
+    else if (hintIdx < hints.length - 1) setHintIdx(i => i + 1)
+  }
+
+  // CodeMirror extensions — stable reference
+  const cmExts = useMemo(() => [
+    python(),
+    cmAppTheme,
+    cmFont,
+    keymap.of([{ key: 'Mod-Enter', run: () => { submitRef.current?.(); return true } }]),
+  ], [])
+
+  const cmTheme = isDark ? vscodeDark : githubLight
+
+  // Style shorthand
+  const cv = {
+    bg: 'var(--bg)', surface: 'var(--surface)', surface2: 'var(--surface-2)',
+    border: 'var(--border)', borderSt: 'var(--border-strong)',
+    text: 'var(--text)', muted: 'var(--text-muted)', subtle: 'var(--text-subtle)',
+    accent: 'var(--accent)', accentL: 'var(--accent-light)', accentB: 'var(--accent-border)', accentT: 'var(--accent-text)',
+  }
+  const srf  = { backgroundColor: cv.surface }
+  const srf2 = { backgroundColor: cv.surface2 }
+  const bg_  = { backgroundColor: cv.bg }
+  const brd  = { borderColor: cv.border }
+  const txt  = { color: cv.text }
+  const muted= { color: cv.muted }
+  const subtle={color: cv.subtle }
+  const acc  = { color: cv.accent }
+
+  if (!exercise) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-4" style={bg_}>
+      <AlertCircle className="w-10 h-10" style={{ color:'#ef4444' }} />
+      <h1 className="text-xl font-bold" style={txt}>Exercise not found</h1>
+      <Link href="/practice" className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ backgroundColor: cv.accent }}>Back to Practice</Link>
+    </div>
   )
 
-  // ─── Note auto-save ────────────────────────────────────────────────────────
-  const handleNoteChange = (e) => {
-    const val = e.target.value
-    setNoteText(val)
-    setNoteSaved(false)
-    clearTimeout(noteSaveTimerRef.current)
-    noteSaveTimerRef.current = setTimeout(() => {
-      saveNote(exercise.id, val)
-      setNoteSaved(true)
-    }, 800)
-  }
-
-  // ─── Hints ────────────────────────────────────────────────────────────────
-  const hints = exercise?.hints ?? []
-
-  const handleShowNextHint = () => {
-    if (!showHints) {
-      setShowHints(true)
-      setCurrentHintIndex(0)
-    } else if (currentHintIndex < hints.length - 1) {
-      setCurrentHintIndex((i) => i + 1)
-    }
-  }
-
-  const hintsRevealed = showHints ? currentHintIndex + 1 : 0
-
-  // ─── Mark complete ────────────────────────────────────────────────────────
-  const handleMarkComplete = () => {
-    markExerciseComplete(exercise.id)
-  }
-
-  // ─── Not found ────────────────────────────────────────────────────────────
-  if (!exercise) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-zinc-950 gap-6 px-4">
-        <div className="p-5 rounded-2xl bg-rose-100 dark:bg-rose-900/30">
-          <AlertCircle className="w-10 h-10 text-rose-500" />
-        </div>
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            Exercise Not Found
-          </h1>
-          <p className="text-slate-500 dark:text-zinc-400 text-sm">
-            No exercise with id &ldquo;{id}&rdquo; exists.
-          </p>
-        </div>
-        <Link
-          href="/practice"
-          className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition-colors"
-        >
-          Back to Practice
-        </Link>
-      </div>
-    )
-  }
+  const cfg = result ? (STATUS_CFG[result.status] ?? STATUS_CFG.wrong) : null
+  const Ico = cfg?.icon
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col overflow-x-hidden">
-      {/* ── Top bar / breadcrumb ─────────────────────────────────────────── */}
-      <div className="bg-white dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800 sticky top-0 z-30 overflow-x-hidden">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-3 min-w-0">
-          {/* Back button */}
-          <Link
-            href="/practice"
-            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shrink-0"
-          >
+    <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - 3.5rem)', backgroundColor: cv.bg }}>
+
+      {/* ── Top bar ──────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-5 h-10 border-b shrink-0" style={{ ...srf, ...brd }}>
+        <Link href="/practice" className="flex items-center gap-1 text-xs transition-colors shrink-0" style={muted}
+          onMouseEnter={e => e.currentTarget.style.color=cv.accent}
+          onMouseLeave={e => e.currentTarget.style.color=cv.muted}>
+          <ChevronLeft className="w-3.5 h-3.5" />Practice
+        </Link>
+        <span style={{ color:cv.borderSt }}>/</span>
+        <span className="text-xs font-medium truncate flex-1" style={txt}>{exercise.title}</span>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant={exercise.difficulty} size="sm">
+            {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
+          </Badge>
+          {done && <span className="hidden sm:flex items-center gap-1 text-[11px] font-semibold" style={{ color:'#10b981' }}><CheckCheck className="w-3.5 h-3.5" />Solved</span>}
+        </div>
+
+        <div className="flex items-center gap-0.5 ml-1">
+          <button disabled={!prev} onClick={() => prev && router.push(`/practice/${prev.id}`)}
+            className="p-1 rounded disabled:opacity-30 transition-all" style={muted}
+            onMouseEnter={e => { if(prev){e.currentTarget.style.backgroundColor=cv.surface2;e.currentTarget.style.color=cv.text}}}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor='';e.currentTarget.style.color=cv.muted }}>
             <ChevronLeft className="w-4 h-4" />
-            Practice
-          </Link>
-
-          <span className="text-slate-300 dark:text-slate-600">/</span>
-
-          <span className="text-sm font-medium text-slate-900 dark:text-white truncate">
-            {exercise.title}
-          </span>
-
-          {/* Badges */}
-          <div className="hidden sm:flex items-center gap-2 ml-1">
-            <Badge variant={exercise.difficulty} size="sm">
-              {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
-            </Badge>
-            <Badge variant={exercise.category} size="sm">
-              {exercise.category}
-            </Badge>
-          </div>
-
-          {/* Spacer */}
-          <div className="flex-1" />
-
-          {/* Completion status */}
-          {isCompleted && (
-            <span className="hidden sm:flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-medium">
-              <CheckCheck className="w-4 h-4" />
-              Completed
-            </span>
-          )}
-
-          {/* Prev / Next navigation */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => prevExercise && router.push(`/practice/${prevExercise.id}`)}
-              disabled={!prevExercise}
-              title={prevExercise ? `Previous: ${prevExercise.title}` : 'No previous exercise'}
-              className="p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs text-slate-400 dark:text-zinc-500 tabular-nums">
-              {exerciseIndex + 1} / {exercises.length}
-            </span>
-            <button
-              onClick={() => nextExercise && router.push(`/practice/${nextExercise.id}`)}
-              disabled={!nextExercise}
-              title={nextExercise ? `Next: ${nextExercise.title}` : 'No next exercise'}
-              className="p-2 rounded-lg text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
+          </button>
+          <span className="text-[10px] tabular-nums px-1.5" style={subtle}>{idx+1}/{exercises.length}</span>
+          <button disabled={!next} onClick={() => next && router.push(`/practice/${next.id}`)}
+            className="p-1 rounded disabled:opacity-30 transition-all" style={muted}
+            onMouseEnter={e => { if(next){e.currentTarget.style.backgroundColor=cv.surface2;e.currentTarget.style.color=cv.text}}}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor='';e.currentTarget.style.color=cv.muted }}>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* ── Two-column layout ────────────────────────────────────────────── */}
-      <div className="flex-1 w-full max-w-screen-2xl mx-auto px-4 sm:px-6 py-6 min-w-0">
-        <div className="flex flex-col lg:flex-row gap-6 lg:items-start min-w-0">
+      {/* ── Main panels ──────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-hidden">
+        <PanelGroup direction="horizontal" className="h-full">
 
-          {/* ═══════════════════════════════════════════════════════════════
-              LEFT PANEL — Problem description
-          ═══════════════════════════════════════════════════════════════ */}
-          <div className="w-full lg:w-[420px] lg:shrink-0 min-w-0 lg:sticky lg:top-[3.75rem] lg:max-h-[calc(100vh-5.5rem)] lg:overflow-y-auto space-y-5 pb-6">
+          {/* ── LEFT: Problem panel ──────────────────────────────────────── */}
+          <Panel defaultSize="38" minSize="22" maxSize="52">
+            <div className="h-full flex flex-col border-r" style={{ ...srf, ...brd }}>
 
-            {/* Exercise title + meta */}
-            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={exercise.difficulty} size="md">
-                    {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
-                  </Badge>
-                  <Badge variant={exercise.category} size="md">
-                    {exercise.category}
-                  </Badge>
-                  {exercise.topic && exercise.topic !== 'all' && (
-                    <Badge variant="default" size="sm">
-                      {exercise.topic}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Bookmark button */}
-                <button
-                  onClick={() => toggleBookmark(exercise.id)}
-                  title={bookmarked ? 'Remove bookmark' : 'Bookmark this exercise'}
-                  className="p-2 rounded-xl text-slate-400 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-all duration-150 shrink-0"
-                >
-                  {bookmarked
-                    ? <Bookmark className="w-5 h-5 text-amber-500 fill-amber-500" />
-                    : <BookmarkPlus className="w-5 h-5" />}
-                </button>
-              </div>
-
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                {exercise.title}
-              </h1>
-              <p className="text-sm text-slate-500 dark:text-zinc-400 leading-relaxed">
-                {exercise.description}
-              </p>
-            </div>
-
-            {/* Schema */}
-            {exercise.schema && (
-              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
-                <button
-                  onClick={() => setSchemaOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors"
-                  aria-expanded={schemaOpen}
-                >
-                  <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-wide">
-                    <Database className="w-4 h-4 text-slate-400 dark:text-zinc-500" aria-hidden="true" />
-                    Schema
-                  </h3>
-                  <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${schemaOpen ? 'rotate-90' : ''}`} aria-hidden="true" />
-                </button>
-                {schemaOpen && (
-                  <div className="px-5 pb-5">
-                    <CodeBlock
-                      code={exercise.schema}
-                      language="python"
-                      title="models.py"
-                      showLineNumbers
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Sample data */}
-            {exercise.sampleData && (
-              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
-                <button
-                  onClick={() => setSampleDataOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-zinc-800/40 transition-colors"
-                  aria-expanded={sampleDataOpen}
-                >
-                  <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-zinc-300 uppercase tracking-wide">
-                    <Database className="w-4 h-4 text-slate-400 dark:text-zinc-500" aria-hidden="true" />
-                    Sample Data
-                  </h3>
-                  <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${sampleDataOpen ? 'rotate-90' : ''}`} aria-hidden="true" />
-                </button>
-                {sampleDataOpen && (
-                  <div className="px-5 pb-5">
-                    <CodeBlock
-                      code={exercise.sampleData}
-                      language="python"
-                      title="seed data"
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Problem statement */}
-            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
-              <SectionHeading icon={FileText}>Problem Statement</SectionHeading>
-              <p className="text-slate-700 dark:text-zinc-300 text-sm leading-relaxed">
-                {exercise.problemStatement}
-              </p>
-
-              {exercise.expectedResult && (
-                <>
-                  <Divider />
-                  <div className="mt-4">
-                    <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-                      Expected Result
-                    </p>
-                    <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">
-                      {exercise.expectedResult}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Tags */}
-            {exercise.tags && exercise.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 px-1">
-                {exercise.tags.map((tag) => (
-                  <Badge key={tag} variant="default" size="sm">
-                    {tag}
-                  </Badge>
+              {/* Tabs */}
+              <div className="flex border-b shrink-0" style={{ ...srf, ...brd }}>
+                {[
+                  { key:'problem', icon:FileText, label:'Problem' },
+                  { key:'schema',  icon:Database, label:'Schema'  },
+                  { key:'notes',   icon:Code2,    label:'Notes'   },
+                ].map(({ key, icon:Icon, label }) => (
+                  <button key={key} onClick={() => setTab(key)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all"
+                    style={tab===key
+                      ? { borderColor:cv.accent, color:cv.accent, backgroundColor:cv.accentL }
+                      : { borderColor:'transparent', ...muted }}
+                    onMouseEnter={e => { if(tab!==key){e.currentTarget.style.color=cv.text;e.currentTarget.style.backgroundColor=cv.surface2}}}
+                    onMouseLeave={e => { if(tab!==key){e.currentTarget.style.color=cv.muted;e.currentTarget.style.backgroundColor=''}}}>
+                    <Icon className="w-3.5 h-3.5" />{label}
+                  </button>
                 ))}
               </div>
-            )}
 
-            {/* Mark complete + bookmark actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleMarkComplete}
-                className={[
-                  'flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200',
-                  isCompleted
-                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 cursor-default'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm shadow-emerald-500/30',
-                ].join(' ')}
-              >
-                <CheckCircle className="w-4 h-4" />
-                {isCompleted ? 'Marked as Complete' : 'Mark as Complete'}
-              </button>
-            </div>
+              {/* ── PROBLEM TAB ── */}
+              {tab==='problem' && (
+                <div className="flex-1 overflow-y-auto">
+                  <div className="p-6 space-y-6">
 
-            {/* Prev / Next exercise navigation (bottom of left panel) */}
-            <div className="flex items-center gap-3">
-              {prevExercise ? (
-                <Link
-                  href={`/practice/${prevExercise.id}`}
-                  className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
-                >
-                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                  <span className="truncate">{prevExercise.title}</span>
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-
-              {nextExercise ? (
-                <Link
-                  href={`/practice/${nextExercise.id}`}
-                  className="flex-1 flex items-center justify-end gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
-                >
-                  <span className="truncate">{nextExercise.title}</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-            </div>
-          </div>
-
-          {/* ═══════════════════════════════════════════════════════════════
-              RIGHT PANEL — Code editor + hints + solution
-          ═══════════════════════════════════════════════════════════════ */}
-          <div className="flex-1 min-w-0 space-y-5">
-
-            {/* Code editor card */}
-            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden">
-              {/* Editor toolbar */}
-              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-zinc-800">
-                <div className="flex items-center gap-2">
-                  <Code className="w-4 h-4 text-slate-400" />
-                  <span className="text-sm font-semibold text-slate-700 dark:text-zinc-300">
-                    Your Solution
-                  </span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  {/* Traffic light dots — purely decorative */}
-                  <span className="w-3 h-3 rounded-full bg-rose-400/70" aria-hidden="true" />
-                  <span className="w-3 h-3 rounded-full bg-amber-400/70" aria-hidden="true" />
-                  <span className="w-3 h-3 rounded-full bg-emerald-400/70" aria-hidden="true" />
-                </div>
-              </div>
-
-              {/* Textarea editor */}
-              <textarea
-                ref={editorRef}
-                value={userCode}
-                onChange={(e) => setUserCode(e.target.value)}
-                onKeyDown={handleKeyDown}
-
-                spellCheck={false}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="off"
-                aria-label="Code editor"
-                className="block w-full resize-none outline-none font-mono text-sm leading-relaxed p-5"
-                style={{
-                  background: '#0d1117',
-                  color: '#e6edf3',
-                  fontFamily: "'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Courier New', monospace",
-                  fontSize: '14px',
-                  minHeight: '320px',
-                  tabSize: 4,
-                  caretColor: '#58a6ff',
-                }}
-              />
-
-              {/* Keyboard hint + line count */}
-              <div className="px-5 py-1.5 bg-[#0d1117] border-t border-slate-700/30 flex items-center justify-between">
-                <p className="text-xs text-slate-500 select-none">
-                  Press{' '}
-                  <kbd className="px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-400 font-mono text-[10px] border border-slate-600/50">
-                    Ctrl
-                  </kbd>
-                  {' + '}
-                  <kbd className="px-1.5 py-0.5 rounded bg-slate-700/60 text-slate-400 font-mono text-[10px] border border-slate-600/50">
-                    Enter
-                  </kbd>
-                  {' '}to run tests
-                </p>
-                {userCode && (
-                  <p className="text-xs text-slate-600 select-none tabular-nums">
-                    {userCode.split('\n').length} lines · {userCode.length} chars
-                  </p>
-                )}
-              </div>
-
-              {/* Action row */}
-              <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-t border-slate-700/40 bg-[#0d1117]">
-                {/* Run Tests button */}
-                <button
-                  onClick={handleSubmit}
-                  disabled={!userCode.trim() || isRunning}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border border-transparent disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150"
-                >
-                  {isRunning ? (
-                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <Play className="w-4 h-4" aria-hidden="true" />
-                  )}
-                  {isRunning ? 'Running...' : 'Run Tests'}
-                </button>
-
-                {/* Show Hint button */}
-                <button
-                  onClick={handleShowNextHint}
-                  disabled={hintsRevealed >= hints.length}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150"
-                >
-                  <Lightbulb className="w-4 h-4" />
-                  {showHints
-                    ? hintsRevealed < hints.length
-                      ? `Hint ${hintsRevealed + 1} of ${hints.length}`
-                      : 'All Hints Shown'
-                    : 'Show Hint'}
-                  {hintsRevealed > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 rounded-md bg-amber-500/20 text-xs font-bold">
-                      {hintsRevealed}/{hints.length}
-                    </span>
-                  )}
-                </button>
-
-                {/* Show/hide solution */}
-                <button
-                  onClick={() => setShowSolution((v) => !v)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 transition-all duration-150"
-                >
-                  {showSolution ? (
-                    <>
-                      <EyeOff className="w-4 h-4" />
-                      Hide Solution
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-4 h-4" />
-                      Show Solution
-                    </>
-                  )}
-                </button>
-
-                {/* Mark complete — mirrored in right panel */}
-                <button
-                  onClick={handleMarkComplete}
-                  className={[
-                    'flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium border transition-all duration-150 ml-auto',
-                    isCompleted
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 cursor-default'
-                      : 'bg-slate-700/40 hover:bg-slate-700/60 text-slate-300 border-slate-600/40',
-                  ].join(' ')}
-                >
-                  <CheckCheck className="w-4 h-4" />
-                  {isCompleted ? 'Completed' : 'Mark Complete'}
-                </button>
-              </div>
-            </div>
-
-            {/* ── Test Result panel ─────────────────────────────────────── */}
-            {testResult && (
-              <TestResultPanel
-                result={testResult}
-                onDismiss={() => setTestResult(null)}
-              />
-            )}
-
-            {/* ── Hints panel ──────────────────────────────────────────── */}
-            {showHints && hints.length > 0 && (
-              <div className="rounded-2xl border border-amber-200 dark:border-amber-800/40 overflow-hidden">
-                <div className="flex items-center justify-between px-5 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40">
-                  <h3 className="flex items-center gap-2 text-sm font-semibold text-amber-800 dark:text-amber-300">
-                    <Lightbulb className="w-4 h-4" />
-                    Hints
-                    <span className="px-1.5 py-0.5 rounded-md bg-amber-200/70 dark:bg-amber-800/50 text-xs font-bold text-amber-700 dark:text-amber-300">
-                      {hintsRevealed}/{hints.length}
-                    </span>
-                  </h3>
-                  <button
-                    onClick={() => { setShowHints(false); setCurrentHintIndex(0) }}
-                    className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-medium"
-                  >
-                    Hide
-                  </button>
-                </div>
-
-                <div className="p-5 bg-amber-50/50 dark:bg-amber-900/10 space-y-3">
-                  <ol className="space-y-3">
-                    {hints.slice(0, hintsRevealed).map((hint, i) => (
-                      <li key={i} className="flex gap-3 text-sm text-amber-900 dark:text-amber-200 leading-relaxed">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-200 dark:bg-amber-800/60 flex items-center justify-center text-xs font-bold text-amber-800 dark:text-amber-300 mt-0.5">
-                          {i + 1}
-                        </span>
-                        {hint}
-                      </li>
-                    ))}
-                  </ol>
-
-                  {hintsRevealed < hints.length && (
-                    <button
-                      onClick={handleShowNextHint}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline mt-1"
-                    >
-                      <Lightbulb className="w-3.5 h-3.5" />
-                      Reveal hint {hintsRevealed + 1} of {hints.length}
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* ── Solution panel ───────────────────────────────────────── */}
-            {showSolution && (
-              <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-indigo-200 dark:border-indigo-800/40 overflow-hidden">
-                {/* Header */}
-                <div className="px-5 py-3.5 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800/40 flex items-center justify-between">
-                  <h3 className="flex items-center gap-2 text-sm font-semibold text-indigo-800 dark:text-indigo-300">
-                    <Eye className="w-4 h-4" />
-                    Solution
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-xs text-indigo-500 dark:text-indigo-400">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    Try it yourself first!
-                  </div>
-                </div>
-
-                {/* Tabs — only show if alternatives exist */}
-                {exercise.alternativeSolutions && exercise.alternativeSolutions.length > 0 && (
-                  <div className="flex border-b border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/50 dark:bg-indigo-900/10 px-5 gap-1 pt-2">
-                    {['primary', ...exercise.alternativeSolutions.map((_, i) => `alt-${i}`)].map((tab, i) => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveSolutionTab(tab)}
-                        className={[
-                          'px-3 py-1.5 text-xs font-semibold rounded-t-lg border-b-2 -mb-px transition-colors',
-                          activeSolutionTab === tab
-                            ? 'border-indigo-500 text-indigo-700 dark:text-indigo-300 bg-white dark:bg-zinc-900/60'
-                            : 'border-transparent text-slate-500 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400',
-                        ].join(' ')}
-                      >
-                        {tab === 'primary' ? 'Primary' : `Alt ${i}`}
+                    {/* Title */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap gap-1.5 mb-2">
+                          <Badge variant={exercise.difficulty} size="sm">
+                            {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
+                          </Badge>
+                          {exercise.topic && exercise.topic!=='all' && <Badge variant="default" size="sm">{exercise.topic}</Badge>}
+                        </div>
+                        <h1 className="text-base font-bold leading-snug" style={txt}>{exercise.title}</h1>
+                        {exercise.description && (
+                          <p className="text-[12px] mt-1.5 leading-relaxed" style={muted}>{exercise.description}</p>
+                        )}
+                      </div>
+                      <button onClick={() => toggleBookmark(exercise.id)}
+                        className="p-1.5 rounded-lg transition-all shrink-0 mt-0.5"
+                        style={{ color: bookmarked ? '#f59e0b' : cv.muted }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor='rgba(245,158,11,.12)'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor=''}>
+                        {bookmarked
+                          ? <Bookmark className="w-4 h-4" style={{ fill:'#f59e0b',color:'#f59e0b' }} />
+                          : <BookmarkPlus className="w-4 h-4" />}
                       </button>
-                    ))}
-                  </div>
-                )}
+                    </div>
 
-                <div className="p-5 space-y-4">
-                  {/* Primary solution */}
-                  {exercise.solution && (activeSolutionTab === 'primary' || !exercise.alternativeSolutions?.length) && (
-                    <CodeBlock
-                      code={exercise.solution}
-                      language="python"
-                      title="solution.py"
-                    />
-                  )}
+                    <Divider />
 
-                  {/* Alternative solutions */}
-                  {exercise.alternativeSolutions && exercise.alternativeSolutions.map((alt, i) =>
-                    activeSolutionTab === `alt-${i}` ? (
-                      <CodeBlock
-                        key={i}
-                        code={alt}
-                        language="python"
-                        title={`alternative-${i + 1}.py`}
-                      />
-                    ) : null
-                  )}
+                    {/* Task */}
+                    <div>
+                      <SectionLabel>Task</SectionLabel>
+                      <p className="text-sm leading-relaxed" style={txt}>{exercise.problemStatement}</p>
+                    </div>
 
-                  {/* Explanation toggle */}
-                  {exercise.explanation && (
-                    <div className="border-t border-slate-100 dark:border-zinc-800 pt-3">
+                    {/* Expected result */}
+                    {exercise.expectedResult && (
+                      <div className="rounded-xl p-4 border" style={{ backgroundColor:cv.accentL, borderColor:cv.accentB, color:cv.accentT }}>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5">Expected Result</p>
+                        <p className="text-[13px] leading-relaxed font-medium">{exercise.expectedResult}</p>
+                      </div>
+                    )}
+
+                    {/* Sample data — collapsible */}
+                    {exercise.sampleData && (
+                      <div>
+                        <button
+                          onClick={() => setShowData(v => !v)}
+                          className="flex items-center justify-between w-full group"
+                        >
+                          <SectionLabel>Sample Data</SectionLabel>
+                          {showData
+                            ? <ChevronUp className="w-3.5 h-3.5 mb-3" style={subtle} />
+                            : <ChevronDown className="w-3.5 h-3.5 mb-3" style={subtle} />}
+                        </button>
+                        {showData && (
+                          <div className="rounded-xl border overflow-hidden" style={{ ...bg_, ...brd }}>
+                            <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ ...srf, ...brd }}>
+                              <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor:'rgba(239,68,68,.6)' }} />
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor:'rgba(245,158,11,.6)' }} />
+                                <span className="w-2 h-2 rounded-full" style={{ backgroundColor:'rgba(16,185,129,.6)' }} />
+                                <span className="text-[10px] font-mono ml-1" style={subtle}>seed.py</span>
+                              </div>
+                              <CopyBtn text={exercise.sampleData} />
+                            </div>
+                            <pre className="p-4 text-[11px] font-mono leading-relaxed overflow-x-auto" style={{ whiteSpace: 'pre', color: 'var(--text-muted)' }}>
+                              <code>{pyHighlight(exercise.sampleData)}</code>
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Tags */}
+                    {exercise.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {exercise.tags.map(t => (
+                          <span key={t} className="px-2 py-0.5 rounded border text-[10px] font-medium" style={{ ...srf2, borderColor:cv.borderSt, ...muted }}>
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <Divider />
+
+                    {/* Hints */}
+                    <div>
+                      <SectionLabel>Hints</SectionLabel>
+                      {showHints && hints.slice(0, revealed).map((hint, i) => (
+                        <div key={i} className="flex gap-3 mb-3">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
+                            style={{ backgroundColor:'rgba(245,158,11,.15)', border:'1px solid rgba(245,158,11,.28)', color:'#f59e0b' }}>
+                            {i+1}
+                          </span>
+                          <p className="text-[13px] leading-relaxed" style={{ color:'#f59e0b' }}>{hint}</p>
+                        </div>
+                      ))}
                       <button
-                        onClick={() => setShowExplanation((v) => !v)}
-                        className="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
-                      >
-                        <Eye className="w-4 h-4" />
-                        {showExplanation ? 'Hide Explanation' : 'Show Explanation'}
+                        onClick={revealNextHint}
+                        disabled={showHints && revealed >= hints.length}
+                        className="flex items-center gap-1.5 text-[12px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        style={{ color:'#f59e0b' }}>
+                        <Lightbulb className="w-3.5 h-3.5" />
+                        {!showHints ? 'Show first hint' : revealed < hints.length ? `Next hint (${revealed}/${hints.length})` : 'All hints shown'}
+                      </button>
+                    </div>
+
+                    <Divider />
+
+                    {/* Solution */}
+                    <div>
+                      <button onClick={() => setShowSol(v => !v)}
+                        className="flex items-center gap-1.5 text-[12px] font-medium transition-colors mb-3" style={acc}>
+                        {showSol ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {showSol ? 'Hide solution' : 'View solution'}
                       </button>
 
-                      {showExplanation && (
-                        <div className="mt-3 p-4 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
-                          <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">
-                            {exercise.explanation}
-                          </p>
+                      {showSol && (
+                        <div className="rounded-xl border overflow-hidden" style={{ ...bg_, borderColor:cv.accentB }}>
+                          {exercise.alternativeSolutions?.length > 0 && (
+                            <div className="flex border-b px-2 pt-1.5 gap-0.5" style={{ ...srf, ...brd }}>
+                              {['primary', ...exercise.alternativeSolutions.map((_, i) => `alt-${i}`)].map((st, i) => (
+                                <button key={st} onClick={() => setAltSolTab(st)}
+                                  className="px-2.5 py-1 text-[10px] font-semibold rounded-t border-b-2 -mb-px transition-colors"
+                                  style={altSolTab===st ? { borderColor:cv.accent, color:cv.accent } : { borderColor:'transparent', ...muted }}>
+                                  {st==='primary' ? 'Primary' : `Alt ${i}`}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ ...srf, ...brd }}>
+                            <span className="text-[10px] font-mono" style={subtle}>solution.py</span>
+                            <CopyBtn text={altSolTab==='primary' ? exercise.solution : exercise.alternativeSolutions[parseInt(altSolTab.split('-')[1])]} />
+                          </div>
+                          <pre className="p-4 text-[12px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap" style={{ color:'#10b981' }}>
+                            {altSolTab==='primary' ? exercise.solution : exercise.alternativeSolutions[parseInt(altSolTab.split('-')[1])]}
+                          </pre>
+                          {exercise.explanation && (
+                            <div className="border-t" style={brd}>
+                              <button onClick={() => setShowExp(v => !v)}
+                                className="flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-medium w-full transition-colors" style={acc}>
+                                <Eye className="w-3 h-3" />
+                                {showExp ? 'Hide explanation' : 'Read explanation'}
+                              </button>
+                              {showExp && (
+                                <p className="px-4 pb-4 text-[12px] leading-relaxed" style={muted}>{exercise.explanation}</p>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
+
+                    {/* Mark complete */}
+                    <button
+                      onClick={() => markExerciseComplete(exercise.id)}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                      style={done
+                        ? { backgroundColor:'rgba(16,185,129,.10)', border:'1px solid rgba(16,185,129,.28)', color:'#10b981', cursor:'default' }
+                        : { backgroundColor:'#10b981', color:'white', border:'1px solid rgba(16,185,129,.3)', boxShadow:'0 1px 4px rgba(16,185,129,.25)' }}>
+                      <CheckCircle className="w-4 h-4" />
+                      {done ? 'Solved' : 'Mark as complete'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-
-            {/* ── Personal Notes ───────────────────────────────────────── */}
-            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <SectionHeading icon={FileText}>My Notes</SectionHeading>
-                {noteSaved && (
-                  <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Saved
-                  </span>
-                )}
-              </div>
-              <textarea
-                value={noteText}
-                onChange={handleNoteChange}
-                placeholder="Jot down your thoughts, things to remember, or personal insights about this exercise…"
-                rows={4}
-                className="w-full resize-none rounded-xl border border-slate-200 dark:border-zinc-700 bg-slate-50 dark:bg-zinc-900/60 px-4 py-3 text-sm text-slate-700 dark:text-zinc-300 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 dark:focus:border-indigo-600 transition-all duration-150 leading-relaxed"
-              />
-              <div className="flex items-center justify-between mt-2">
-                <p className="text-xs text-slate-400 dark:text-zinc-500">
-                  Notes are saved automatically to your browser.
-                </p>
-                {noteText && (
-                  <p className="text-xs text-slate-400 dark:text-zinc-600 tabular-nums">
-                    {noteText.length} chars
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* ── Bottom nav (mobile-friendly duplicate) ───────────────── */}
-            <div className="flex items-center gap-3 lg:hidden">
-              {prevExercise ? (
-                <Link
-                  href={`/practice/${prevExercise.id}`}
-                  className="flex-1 flex items-center gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
-                >
-                  <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                  <span className="truncate">Prev</span>
-                </Link>
-              ) : (
-                <div className="flex-1" />
               )}
-              {nextExercise ? (
-                <Link
-                  href={`/practice/${nextExercise.id}`}
-                  className="flex-1 flex items-center justify-end gap-2 px-4 py-3 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900/60 text-sm font-medium text-slate-700 dark:text-zinc-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group"
-                >
-                  <span className="truncate">Next</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              ) : (
-                <div className="flex-1" />
+
+              {/* ── SCHEMA TAB ── */}
+              {tab==='schema' && (
+                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                  {exercise.schema ? (
+                    <div className="rounded-xl border overflow-hidden" style={{ ...bg_, ...brd }}>
+                      <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ ...srf, ...brd }}>
+                        <span className="text-[10px] font-mono" style={subtle}>models.py</span>
+                        <CopyBtn text={exercise.schema} />
+                      </div>
+                      <pre className="p-4 text-[11px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap" style={txt}>
+                        {exercise.schema}
+                      </pre>
+                    </div>
+                  ) : <p className="text-xs italic" style={subtle}>No schema for this exercise.</p>}
+                </div>
+              )}
+
+              {/* ── NOTES TAB ── */}
+              {tab==='notes' && (
+                <div className="flex-1 overflow-y-auto p-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <SectionLabel>My Notes</SectionLabel>
+                    {noteSaved && (
+                      <span className="flex items-center gap-1 text-[10px] font-medium mb-3" style={{ color:'#10b981' }}>
+                        <CheckCircle className="w-3 h-3" />Saved
+                      </span>
+                    )}
+                  </div>
+                  <textarea
+                    value={noteText} onChange={handleNote}
+                    placeholder="Your thoughts, patterns to remember…"
+                    rows={14}
+                    className="w-full resize-none rounded-xl px-4 py-3 text-[12px] focus:outline-none leading-relaxed font-mono"
+                    style={{ backgroundColor:cv.surface2, border:`1px solid ${cv.borderSt}`, color:cv.text, caretColor:cv.accent }}
+                  />
+                  <p className="text-[10px]" style={subtle}>Auto-saved to your browser</p>
+                </div>
               )}
             </div>
+          </Panel>
 
-          </div>
-          {/* end right panel */}
-        </div>
+          <ResizeHandle direction="horizontal" />
+
+          {/* ── RIGHT: Editor + Output ───────────────────────────────────── */}
+          <Panel defaultSize="62" minSize="40">
+            <PanelGroup direction="vertical" className="h-full">
+
+              {/* Editor */}
+              <Panel defaultSize="62" minSize="30">
+                <div className="h-full flex flex-col" style={bg_}>
+
+                  {/* Editor toolbar */}
+                  <div className="flex items-center justify-between px-4 h-9 border-b shrink-0" style={{ ...srf, ...brd }}>
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:'rgba(239,68,68,.55)' }} />
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:'rgba(245,158,11,.55)' }} />
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:'rgba(16,185,129,.55)' }} />
+                      </div>
+                      <span className="text-[10px] font-mono" style={subtle}>solution.py — Python</span>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <CopyBtn text={code} />
+                      <button onClick={() => { setCode(''); setResult(null); setOutTab('expected') }}
+                        title="Reset" className="p-1.5 rounded transition-colors" style={muted}
+                        onMouseEnter={e => { e.currentTarget.style.color=cv.text;e.currentTarget.style.backgroundColor=cv.surface2 }}
+                        onMouseLeave={e => { e.currentTarget.style.color=cv.muted;e.currentTarget.style.backgroundColor='' }}>
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* CodeMirror */}
+                  <div className="flex-1 overflow-hidden">
+                    {mounted && (
+                      <CodeMirror
+                        value={code}
+                        onChange={v => setCode(v)}
+                        extensions={cmExts}
+                        theme={cmTheme}
+                        height="100%"
+                        style={{ height:'100%' }}
+                        basicSetup={{
+                          lineNumbers: true,
+                          foldGutter: false,
+                          highlightActiveLine: true,
+                          highlightSelectionMatches: true,
+                          bracketMatching: true,
+                          closeBrackets: true,
+                          autocompletion: true,
+                          indentOnInput: true,
+                          tabSize: 4,
+                          defaultKeymap: true,
+                        }}
+                        placeholder="# Write your Django ORM query here…"
+                      />
+                    )}
+                  </div>
+
+                  {/* Run bar */}
+                  <div className="flex items-center gap-2.5 px-4 py-2.5 border-t shrink-0" style={{ ...srf, ...brd }}>
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!code.trim() || running}
+                      className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[12px] font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      style={{ backgroundColor:'#10b981', boxShadow:'0 1px 6px rgba(16,185,129,.30)' }}
+                      onMouseEnter={e => { if(!running&&code.trim()) e.currentTarget.style.backgroundColor='#059669' }}
+                      onMouseLeave={e => { e.currentTarget.style.backgroundColor='#10b981' }}>
+                      {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                      {running ? 'Running…' : 'Run Tests'}
+                    </button>
+
+                    <button
+                      onClick={revealNextHint}
+                      disabled={showHints && revealed >= hints.length}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                      style={{ color:'#f59e0b', backgroundColor:'rgba(245,158,11,.10)', border:'1px solid rgba(245,158,11,.25)' }}>
+                      <Lightbulb className="w-3.5 h-3.5" />
+                      {revealed > 0 ? `Hint (${revealed}/${hints.length})` : 'Hint'}
+                    </button>
+
+                    <div className="flex items-center gap-1 ml-auto text-[10px]" style={subtle}>
+                      <kbd className="px-1.5 py-0.5 rounded border font-mono" style={{ ...srf2, borderColor:cv.borderSt }}>⌘</kbd>
+                      <kbd className="px-1.5 py-0.5 rounded border font-mono" style={{ ...srf2, borderColor:cv.borderSt }}>↵</kbd>
+                      <span>run</span>
+                    </div>
+                  </div>
+                </div>
+              </Panel>
+
+              <ResizeHandle direction="vertical" />
+
+              {/* Output */}
+              <Panel defaultSize="38" minSize="18">
+                <div className="h-full flex flex-col" style={{ ...bg_, borderTop:`1px solid ${cv.border}` }}>
+
+                  {/* Output tabs */}
+                  <div className="flex items-center border-b shrink-0" style={{ ...srf, ...brd }}>
+                    {[
+                      { key:'expected', label:'Expected Output', icon:Terminal },
+                      { key:'result',   label:'Test Result',     icon:result ? cfg.icon : CheckCircle },
+                    ].map(({ key, label, icon:Icon }) => (
+                      <button key={key} onClick={() => setOutTab(key)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 text-[11px] font-semibold border-b-2 transition-all"
+                        style={outTab===key
+                          ? { borderColor:cv.accent, color:cv.accent, backgroundColor:cv.accentL }
+                          : { borderColor:'transparent', ...muted }}>
+                        <Icon className="w-3.5 h-3.5" style={{ color:key==='result'&&result?cfg.color:undefined }} />
+                        {label}
+                        {key==='result' && result && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+                            style={{ backgroundColor:`${cfg.color}22`, color:cfg.color }}>
+                            {result.score}/100
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                    <div className="ml-auto px-3">
+                      {running && <Loader2 className="w-3.5 h-3.5 animate-spin" style={subtle} />}
+                    </div>
+                  </div>
+
+                  {/* Output content */}
+                  <div className="flex-1 overflow-y-auto">
+
+                    {outTab==='expected' && (
+                      <div className="p-5 space-y-4 font-mono text-[12px]">
+                        <div>
+                          <p className="text-[9px] font-sans font-bold uppercase tracking-widest mb-2" style={subtle}>Django Shell</p>
+                          <pre className="leading-relaxed whitespace-pre-wrap" style={{ color:'#10b981' }}>{simOutput}</pre>
+                        </div>
+                        <Divider />
+                        <div>
+                          <p className="text-[9px] font-sans font-bold uppercase tracking-widest mb-2" style={subtle}>SQL Generated</p>
+                          <pre className="leading-relaxed whitespace-pre-wrap text-[11px]" style={{ color:'#60a5fa' }}>
+{`-- Approximate SQL\nSELECT * FROM "myapp_${(exercise.solution?.match(/(\w+)\.objects/)?.[1]||'model').toLowerCase()}"${exercise.solution?.includes('.filter(')?' \nWHERE -- filter conditions':''}\nLIMIT 21;`}
+                          </pre>
+                        </div>
+                      </div>
+                    )}
+
+                    {outTab==='result' && (
+                      <div className="p-5 space-y-4">
+                        {!result ? (
+                          <div className="flex flex-col items-center justify-center py-10 gap-3">
+                            <Terminal className="w-6 h-6" style={{ color:cv.borderSt }} />
+                            <p className="text-[12px]" style={subtle}>Run your code to see results</p>
+                          </div>
+                        ) : (
+                          <>
+                            {/* Status */}
+                            <div className="flex items-start gap-3 p-4 rounded-xl border"
+                              style={{ backgroundColor:cfg.bg, borderColor:cfg.border }}>
+                              <Ico className="w-5 h-5 shrink-0 mt-0.5" style={{ color:cfg.color }} />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[14px] font-bold" style={{ color:cfg.color }}>{cfg.label}</p>
+                                <p className="text-[12px] mt-0.5 leading-snug" style={muted}>{result.feedback}</p>
+                              </div>
+                              <button onClick={() => setResult(null)} style={subtle}
+                                onMouseEnter={e=>e.currentTarget.style.color=cv.text}
+                                onMouseLeave={e=>e.currentTarget.style.color=cv.subtle}>
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Score bar */}
+                            <div>
+                              <div className="flex justify-between text-[10px] mb-1.5" style={subtle}>
+                                <span>Score</span>
+                                <span className="font-bold" style={txt}>{result.score}/100</span>
+                              </div>
+                              <div className="h-2 rounded-full overflow-hidden" style={srf2}>
+                                <div className="h-full rounded-full transition-all duration-700"
+                                  style={{ width:`${result.score}%`, backgroundColor:cfg.bar }} />
+                              </div>
+                            </div>
+
+                            {/* Detail chips */}
+                            {result.details && (
+                              <div className="flex flex-wrap gap-1.5">
+                                {[['modelMatch','Model'],['methodsMatch','Methods'],['argsMatch','Arguments']].map(([k,label]) =>
+                                  result.details[k]!==undefined ? (
+                                    <span key={k} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border"
+                                      style={result.details[k]
+                                        ? { backgroundColor:'rgba(16,185,129,.10)', color:'#10b981', borderColor:'rgba(16,185,129,.28)' }
+                                        : { backgroundColor:'rgba(239,68,68,.10)', color:'#ef4444', borderColor:'rgba(239,68,68,.28)' }}>
+                                      {result.details[k] ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                      {label}
+                                    </span>
+                                  ) : null
+                                )}
+                              </div>
+                            )}
+
+                            {/* Issues */}
+                            {result.issues?.length > 0 && (
+                              <ul className="space-y-1.5">
+                                {result.issues.map((issue, i) => (
+                                  <li key={i} className="flex items-start gap-2 text-[12px]" style={muted}>
+                                    <span className="mt-2 w-1 h-1 rounded-full shrink-0" style={{ backgroundColor:cv.borderSt }} />
+                                    {issue}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+
+                            {result.status==='correct' && (
+                              <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border"
+                                style={{ backgroundColor:'rgba(16,185,129,.10)', borderColor:'rgba(16,185,129,.28)' }}>
+                                <CheckCheck className="w-4 h-4 shrink-0" style={{ color:'#10b981' }} />
+                                <p className="text-[12px] font-semibold" style={{ color:'#10b981' }}>Exercise marked as complete!</p>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </Panel>
+            </PanelGroup>
+          </Panel>
+        </PanelGroup>
       </div>
     </div>
   )

@@ -9,10 +9,6 @@ const PADDING_MAP = {
   lg:   'p-7',
 };
 
-/**
- * Reusable card. When onClick is provided renders a div with role="button"
- * (never a <button>) so nested interactive elements remain valid HTML.
- */
 export default function Card({
   children,
   className,
@@ -20,6 +16,7 @@ export default function Card({
   hover = false,
   padding = 'md',
   border = true,
+  style,
 }) {
   const handleKeyDown = onClick
     ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(e); } }
@@ -32,18 +29,25 @@ export default function Card({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       className={cn(
-        'rounded-xl bg-white dark:bg-zinc-900/60',
-        border && 'border border-slate-200 dark:border-zinc-800',
+        'rounded-xl',
         PADDING_MAP[padding] ?? PADDING_MAP.md,
-        hover && [
-          'transition-all duration-200 cursor-pointer',
-          'hover:shadow-lg hover:shadow-slate-200/60 dark:hover:shadow-black/60',
-          'hover:-translate-y-0.5',
-          'hover:border-indigo-300 dark:hover:border-indigo-700',
-        ],
-        onClick && !hover && 'cursor-pointer transition-colors duration-150 hover:bg-slate-50 dark:hover:bg-zinc-800',
+        hover && 'transition-all duration-200 cursor-pointer hover:-translate-y-0.5',
+        onClick && !hover && 'cursor-pointer transition-colors duration-150',
         className
       )}
+      style={{
+        backgroundColor: 'var(--surface)',
+        border: border ? '1px solid var(--border)' : undefined,
+        ...style,
+      }}
+      onMouseEnter={hover || onClick ? (e) => {
+        e.currentTarget.style.boxShadow = '0 8px 24px color-mix(in srgb, var(--text) 8%, transparent)';
+        if (hover) e.currentTarget.style.borderColor = 'var(--accent-ring)';
+      } : undefined}
+      onMouseLeave={hover || onClick ? (e) => {
+        e.currentTarget.style.boxShadow = '';
+        if (hover) e.currentTarget.style.borderColor = 'var(--border)';
+      } : undefined}
     >
       {children}
     </div>

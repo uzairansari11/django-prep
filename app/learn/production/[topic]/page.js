@@ -24,97 +24,97 @@ import {
   Globe,
   Lock,
   TrendingUp,
+  ArrowRight,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useProgress } from '@/hooks/useProgress';
 import CodeBlock from '@/components/ui/CodeBlock';
 import Badge from '@/components/ui/Badge';
 import TopicList from '@/components/learn/TopicList';
-import ChecklistCard from '@/components/ui/ChecklistCard';
 import { productionTopics, productionSubcategories } from '@/data/production-topics';
 
-// ── Icon map for subcategory labels ────────────────────────────────────────────
+const ICON_MAP = { Shield, Database, List, FileText, Settings, Zap, Clock, Globe, Lock, TrendingUp };
 
-const ICON_MAP = {
-  Shield,
-  Database,
-  List,
-  FileText,
-  Settings,
-  Zap,
-  Clock,
-  Globe,
-  Lock,
-  TrendingUp,
-};
+// ── Animation wrapper ──────────────────────────────────────────────────────────
+function Reveal({ children, delay = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-32px' }}
+      transition={{ duration: 0.4, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
 function TextContent({ text }) {
   if (!text) return null;
-  const paragraphs = String(text).split('\n').filter((p) => p.trim().length > 0);
   return (
     <div className="space-y-3">
-      {paragraphs.map((para, i) => (
-        <p key={i} className="text-slate-700 dark:text-zinc-300 leading-relaxed text-sm">
-          {para}
-        </p>
+      {String(text).split('\n').filter(p => p.trim()).map((para, i) => (
+        <p key={i} className="leading-relaxed text-sm" style={{ color: 'var(--text-muted)' }}>{para}</p>
       ))}
     </div>
   );
 }
 
-function SectionHeading({ icon: Icon, children, className = '' }) {
+function Card({ children, className = '', accent = false }) {
   return (
-    <div className={`flex items-center gap-2.5 mb-4 ${className}`}>
-      {Icon && <Icon className="w-5 h-5 shrink-0" />}
-      <h2 className="text-lg font-bold text-slate-900 dark:text-white">{children}</h2>
+    <div
+      className={`rounded-2xl p-5 ${className}`}
+      style={{
+        backgroundColor: accent ? 'var(--accent-light)' : 'var(--surface)',
+        border: `1px solid ${accent ? 'var(--accent-border)' : 'var(--border)'}`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ icon: Icon, children }) {
+  return (
+    <div className="flex items-center gap-2 mb-4">
+      {Icon && <Icon className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />}
+      <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>{children}</h2>
     </div>
   );
 }
 
 function SubcategoryBadge({ subcategoryId }) {
-  const sub = productionSubcategories.find((s) => s.id === subcategoryId);
+  const sub = productionSubcategories.find(s => s.id === subcategoryId);
   if (!sub) return null;
-  const IconComponent = ICON_MAP[sub.icon];
+  const Icon = ICON_MAP[sub.icon];
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 text-xs font-medium border border-amber-200/60 dark:border-amber-800/40">
-      {IconComponent && <IconComponent className="w-3 h-3" />}
+    <span
+      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium"
+      style={{ backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)', border: '1px solid var(--accent-border)' }}
+    >
+      {Icon && <Icon className="w-3 h-3" />}
       {sub.label}
     </span>
   );
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────────
-
 export default function ProductionTopicPage({ params }) {
   const resolvedParams = use(params);
   const topicId = resolvedParams.topic;
   const router = useRouter();
 
-  const topic = productionTopics.find((t) => t.id === topicId);
-  const topicIndex = productionTopics.findIndex((t) => t.id === topicId);
+  const topic = productionTopics.find(t => t.id === topicId);
+  const topicIndex = productionTopics.findIndex(t => t.id === topicId);
   const prevTopic = topicIndex > 0 ? productionTopics[topicIndex - 1] : null;
   const nextTopic = topicIndex < productionTopics.length - 1 ? productionTopics[topicIndex + 1] : null;
-
-  // Related topics: same subcategory, excluding current
   const relatedTopics = topic
-    ? productionTopics
-        .filter((t) => t.subcategory === topic.subcategory && t.id !== topic.id)
-        .slice(0, 3)
+    ? productionTopics.filter(t => t.subcategory === topic.subcategory && t.id !== topic.id).slice(0, 3)
     : [];
 
-  const {
-    completedTopics,
-    markTopicComplete,
-    markTopicIncomplete,
-    isTopicComplete,
-    toggleBookmark,
-    isBookmarked,
-    saveNote,
-    getNote,
-  } = useProgress();
-
-  const [noteText, setNoteText] = useState(() => (topic ? getNote(topic.id) : ''));
+  const { completedTopics, markTopicComplete, markTopicIncomplete, isTopicComplete, toggleBookmark, isBookmarked, saveNote, getNote } = useProgress();
+  const [noteText, setNoteText] = useState(() => topic ? getNote(topic.id) : '');
   const [noteSaved, setNoteSaved] = useState(false);
 
   const handleSaveNote = useCallback(() => {
@@ -124,28 +124,19 @@ export default function ProductionTopicPage({ params }) {
     setTimeout(() => setNoteSaved(false), 2000);
   }, [topic, noteText, saveNote]);
 
-  // 404 state
   if (!topic) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex items-center justify-center p-8">
+      <div className="min-h-screen flex items-center justify-center p-8">
         <div className="text-center max-w-md">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-100 dark:bg-rose-900/40 mx-auto mb-5">
-            <AlertTriangle className="w-8 h-8 text-rose-600 dark:text-rose-400" />
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl mx-auto mb-5" style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+            <AlertTriangle className="w-8 h-8" style={{ color: 'var(--accent)' }} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Topic not found</h1>
-          <p className="text-slate-500 dark:text-zinc-400 mb-6 text-sm">
-            The topic{' '}
-            <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-zinc-900 font-mono text-xs">
-              {topicId}
-            </code>{' '}
-            does not exist in our production curriculum.
+          <h1 className="text-2xl font-bold mb-2" style={{ color: 'var(--text)' }}>Topic not found</h1>
+          <p className="mb-6 text-sm" style={{ color: 'var(--text-muted)' }}>
+            The topic <code className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text)' }}>{topicId}</code> does not exist.
           </p>
-          <Link
-            href="/learn/production"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 text-white font-medium text-sm hover:bg-amber-700 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to Production
+          <Link href="/learn/production" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-medium text-sm" style={{ backgroundColor: 'var(--accent)' }}>
+            <ChevronLeft className="w-4 h-4" /> Back to Production
           </Link>
         </div>
       </div>
@@ -155,364 +146,309 @@ export default function ProductionTopicPage({ params }) {
   const isComplete = isTopicComplete(topic.id);
   const bookmarked = isBookmarked(topic.id);
   const { content } = topic;
-
-  // Checklist items derived from interview notes (first 4)
-  const checklistItems = (content.interviewNotes || []).slice(0, 4);
-
-  function handleTopicSelect(selected) {
-    router.push(`/learn/production/${selected.id}`);
-  }
-
-  // Overall production progress for sidebar
-  const productionCompletedCount = productionTopics.filter((t) =>
-    completedTopics.has(String(t.id))
-  ).length;
+  const productionCompletedCount = productionTopics.filter(t => completedTopics.has(String(t.id))).length;
   const productionProgress = Math.round((productionCompletedCount / productionTopics.length) * 100);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Breadcrumb */}
-        <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500 dark:text-zinc-400 mb-4">
-          <Link href="/learn" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
-            Learn
-          </Link>
+    <div className="min-h-screen">
+
+      {/* Mobile topic picker */}
+      <div className="lg:hidden border-b px-4 py-3" style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)' }}>
+        <nav className="flex items-center gap-1.5 text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+          <Link href="/learn" style={{ color: 'var(--accent)' }}>Learn</Link>
           <span>/</span>
-          <Link href="/learn/production" className="hover:text-amber-600 dark:hover:text-amber-400 transition-colors">
-            Production Patterns
-          </Link>
+          <Link href="/learn/production" style={{ color: 'var(--accent)' }}>Production</Link>
           <span>/</span>
-          <span className="text-slate-700 dark:text-zinc-300 font-medium truncate max-w-[12rem]">
-            {topic.title}
-          </span>
+          <span style={{ color: 'var(--text)' }} className="truncate max-w-[10rem]">{topic.title}</span>
         </nav>
+        <select value={topicId} onChange={e => router.push(`/learn/production/${e.target.value}`)} className="w-full text-sm rounded-xl px-4 py-2" style={{ backgroundColor: 'var(--surface-2)', color: 'var(--text)', border: '1px solid var(--border)' }}>
+          {productionTopics.map(t => <option key={t.id} value={t.id}>{t.title}</option>)}
+        </select>
+      </div>
 
-        {/* Mobile topic picker — visible only below lg */}
-        <div className="lg:hidden mb-5">
-          <select
-            value={topicId}
-            onChange={(e) => router.push(`/learn/production/${e.target.value}`)}
-            className="w-full text-sm bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl px-4 py-2.5 text-slate-700 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 transition-all duration-150"
-            aria-label="Navigate to topic"
-          >
-            {productionTopics.map((t) => (
-              <option key={t.id} value={t.id}>{t.title}</option>
-            ))}
-          </select>
-        </div>
+      <div className="flex items-start">
 
-        <div className="flex gap-8 items-start">
-          {/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */}
-          <aside className="hidden lg:flex flex-col w-72 shrink-0 sticky top-6 max-h-[calc(100vh-5rem)] overflow-y-auto bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-4">
-            <div className="flex items-center gap-2 mb-1 px-1">
-              <Flame className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span className="font-bold text-slate-900 dark:text-white text-sm">Production Patterns</span>
+        {/* ── LEFT SIDEBAR ─────────────────────────────────────────────── */}
+        <aside className="hidden lg:flex flex-col w-72 shrink-0 border-r" style={{ position: 'sticky', top: 0, height: 'calc(100vh - 4rem)', backgroundColor: 'var(--surface)', borderColor: 'var(--border)' }}>
+          <div className="shrink-0 px-4 pt-4 pb-3 border-b" style={{ borderColor: 'var(--border)' }}>
+            <nav className="flex items-center gap-1 text-xs mb-3" style={{ color: 'var(--text-muted)' }}>
+              <Link href="/learn" className="hover:underline" style={{ color: 'var(--accent)' }}>Learn</Link>
+              <span>/</span>
+              <Link href="/learn/production" className="hover:underline" style={{ color: 'var(--accent)' }}>Production</Link>
+            </nav>
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />
+              <span className="font-bold text-sm" style={{ color: 'var(--text)' }}>Production Patterns</span>
             </div>
-
-            {/* Overall production progress */}
-            <div className="px-1 mb-4">
-              <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-zinc-400 mb-1.5">
-                <span>Overall progress</span>
-                <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                  {productionCompletedCount}/{productionTopics.length}
-                </span>
+            <div className="mt-3">
+              <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
+                <span>Progress</span>
+                <span style={{ color: 'var(--accent)' }}>{productionCompletedCount}/{productionTopics.length}</span>
               </div>
-              <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-zinc-800 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-amber-500 transition-all duration-700 ease-out"
-                  style={{ width: `${productionProgress}%` }}
-                />
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--surface-2)' }}>
+                <div className="h-full rounded-full transition-all duration-700" style={{ width: `${productionProgress}%`, backgroundColor: 'var(--accent)' }} />
               </div>
             </div>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3" style={{ scrollbarWidth: 'none' }}>
+            <TopicList topics={productionTopics} completedTopics={completedTopics} currentTopicId={topic.id} onSelect={t => router.push(`/learn/production/${t.id}`)} />
+          </div>
+        </aside>
 
-            <TopicList
-              topics={productionTopics}
-              completedTopics={completedTopics}
-              currentTopicId={topic.id}
-              onSelect={handleTopicSelect}
-            />
-          </aside>
+        {/* ── MAIN CONTENT ─────────────────────────────────────────────── */}
+        <main className="flex-1 min-w-0">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-5">
 
-          {/* ── MAIN CONTENT ──────────────────────────────────────────────── */}
-          <main className="flex-1 min-w-0 space-y-6">
-            {/* Topic header card */}
-            <div className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <Badge variant={topic.difficulty}>
-                      {topic.difficulty.charAt(0).toUpperCase() + topic.difficulty.slice(1)}
-                    </Badge>
-                    {topic.estimatedMinutes && (
-                      <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2.5 py-1 rounded-lg">
-                        <Clock className="w-3.5 h-3.5" />
-                        {topic.estimatedMinutes} min
-                      </span>
+            {/* ── Header ── */}
+            <Reveal delay={0}>
+              <Card>
+                {/* Top meta row */}
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                  <Badge variant={topic.difficulty}>
+                    {topic.difficulty.charAt(0).toUpperCase() + topic.difficulty.slice(1)}
+                  </Badge>
+                  {topic.estimatedMinutes && (
+                    <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-2)' }}>
+                      <Clock className="w-3.5 h-3.5" />{topic.estimatedMinutes} min
+                    </span>
+                  )}
+                  <SubcategoryBadge subcategoryId={topic.subcategory} />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold leading-tight mb-2" style={{ color: 'var(--text)' }}>
+                      {topic.title}
+                    </h1>
+                    {topic.description && (
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{topic.description}</p>
                     )}
-                    <SubcategoryBadge subcategoryId={topic.subcategory} />
+                    {topic.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-3">
+                        {topic.tags.map(tag => <Badge key={tag} variant="default" size="sm">{tag}</Badge>)}
+                      </div>
+                    )}
                   </div>
 
-                  <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight mb-3">
-                    {topic.title}
-                  </h1>
-
-                  {topic.description && (
-                    <p className="text-slate-500 dark:text-zinc-400 text-sm leading-relaxed max-w-2xl">
-                      {topic.description}
-                    </p>
-                  )}
-
-                  {topic.tags?.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {topic.tags.map((tag) => (
-                        <Badge key={tag} variant="default" size="sm">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={() => toggleBookmark(topic.id)}
-                    title={bookmarked ? 'Remove bookmark' : 'Bookmark this topic'}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-medium transition-all duration-150 ${
-                      bookmarked
-                        ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400'
-                        : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 hover:border-amber-300 dark:hover:border-amber-700 hover:text-amber-600'
-                    }`}
-                  >
-                    {bookmarked ? (
-                      <Bookmark className="w-4 h-4 fill-current" />
-                    ) : (
-                      <BookmarkPlus className="w-4 h-4" />
-                    )}
-                    <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      isComplete ? markTopicIncomplete(topic.id) : markTopicComplete(topic.id)
-                    }
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl border text-sm font-semibold transition-all duration-150 ${
-                      isComplete
-                        ? 'bg-emerald-600 dark:bg-emerald-700 border-emerald-600 dark:border-emerald-700 text-white hover:bg-emerald-700 dark:hover:bg-emerald-800'
-                        : 'bg-white dark:bg-zinc-800 border-slate-200 dark:border-zinc-600 text-slate-600 dark:text-zinc-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-300 dark:hover:border-emerald-700 hover:text-emerald-700 dark:hover:text-emerald-400'
-                    }`}
-                  >
-                    <CheckCircle className="w-4 h-4" />
-                    {isComplete ? 'Completed' : 'Mark Complete'}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* ── 1. Explanation ────────────────────────────────────────────── */}
-            {content.explanation && (
-              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                <SectionHeading icon={BookOpen} className="text-amber-600 dark:text-amber-400">
-                  What it is
-                </SectionHeading>
-                <TextContent text={content.explanation} />
-              </section>
-            )}
-
-            {/* ── 2. Real World Example ─────────────────────────────────────── */}
-            {content.realExample && (
-              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                <SectionHeading icon={Lightbulb} className="text-amber-600 dark:text-amber-400">
-                  Real World Example
-                </SectionHeading>
-                <TextContent text={content.realExample} />
-              </section>
-            )}
-
-            {/* ── 3. Code Example ───────────────────────────────────────────── */}
-            {content.codeExample && (
-              <section>
-                <div className="flex items-center gap-2.5 mb-4">
-                  <div className="w-2 h-2 rounded-full bg-amber-500" />
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Code Example</h2>
-                </div>
-                <CodeBlock
-                  code={content.codeExample}
-                  title={`${topic.slug || topic.id}.py`}
-                  showLineNumbers
-                />
-              </section>
-            )}
-
-            {/* ── 4. Understanding the Output ───────────────────────────────── */}
-            {content.outputExplanation && (
-              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                <SectionHeading icon={BookOpen} className="text-slate-700 dark:text-zinc-300">
-                  Understanding the Output
-                </SectionHeading>
-                <TextContent text={content.outputExplanation} />
-              </section>
-            )}
-
-            {/* ── 5. Common Mistakes ────────────────────────────────────────── */}
-            {content.commonMistakes?.length > 0 && (
-              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-rose-200/60 dark:border-rose-800/40 p-6">
-                <SectionHeading icon={AlertTriangle} className="text-rose-600 dark:text-rose-400">
-                  Common Mistakes
-                </SectionHeading>
-                <ul className="space-y-3">
-                  {content.commonMistakes.map((mistake, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 text-xs font-bold shrink-0 mt-0.5">
-                        {i + 1}
-                      </span>
-                      <p className="text-sm text-slate-700 dark:text-zinc-300 leading-relaxed">
-                        {mistake}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {/* ── 6. Interview Notes ────────────────────────────────────────── */}
-            {content.interviewNotes?.length > 0 && (
-              <section className="bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/50 p-6">
-                <SectionHeading icon={Lightbulb} className="text-amber-700 dark:text-amber-400">
-                  Interview Notes
-                </SectionHeading>
-                <ul className="space-y-2.5">
-                  {content.interviewNotes.map((note, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 shrink-0 mt-2" />
-                      <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">{note}</p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {/* ── 7. When to Use ────────────────────────────────────────────── */}
-            {content.whenToUse && (
-              <section className="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 p-6">
-                <SectionHeading icon={CheckCircle} className="text-emerald-700 dark:text-emerald-400">
-                  When to Use
-                </SectionHeading>
-                <TextContent text={content.whenToUse} />
-              </section>
-            )}
-
-            {/* ── 8. When NOT to Use ────────────────────────────────────────── */}
-            {content.whenNotToUse && (
-              <section className="bg-rose-50 dark:bg-rose-900/20 rounded-2xl border border-rose-200 dark:border-rose-800/50 p-6">
-                <SectionHeading icon={XCircle} className="text-rose-700 dark:text-rose-400">
-                  When NOT to Use
-                </SectionHeading>
-                <TextContent text={content.whenNotToUse} />
-              </section>
-            )}
-
-            {/* ── 9. Production Checklist (new) ─────────────────────────────── */}
-            {checklistItems.length > 0 && (
-              <ChecklistCard
-                items={checklistItems}
-                title="Production Checklist"
-              />
-            )}
-
-            {/* ── 10. Related Topics (new) ──────────────────────────────────── */}
-            {relatedTopics.length > 0 && (
-              <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-                <div className="flex items-center gap-2.5 mb-4">
-                  <Flame className="w-5 h-5 text-amber-500 shrink-0" />
-                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Related Topics</h2>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {relatedTopics.map((related) => (
-                    <Link
-                      key={related.id}
-                      href={`/learn/production/${related.id}`}
-                      className="group block"
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => toggleBookmark(topic.id)}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+                      style={bookmarked ? { backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent-text)' } : { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { if (!bookmarked) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; } }}
+                      onMouseLeave={e => { if (!bookmarked) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
                     >
-                      <div className="flex flex-col gap-2 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-700/60 hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all duration-150">
-                        <p className="text-sm font-semibold text-slate-900 dark:text-white leading-snug group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors line-clamp-2">
-                          {related.title}
-                        </p>
-                        <Badge variant={related.difficulty} size="sm">
-                          {related.difficulty.charAt(0).toUpperCase() + related.difficulty.slice(1)}
-                        </Badge>
-                      </div>
-                    </Link>
-                  ))}
+                      {bookmarked ? <Bookmark className="w-4 h-4 fill-current" /> : <BookmarkPlus className="w-4 h-4" />}
+                      <span className="hidden sm:inline">{bookmarked ? 'Saved' : 'Save'}</span>
+                    </button>
+
+                    <button
+                      onClick={() => isComplete ? markTopicIncomplete(topic.id) : markTopicComplete(topic.id)}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150"
+                      style={isComplete ? { backgroundColor: 'var(--accent)', border: '1px solid var(--accent)', color: '#fff' } : { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                      onMouseEnter={e => { if (!isComplete) { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)'; } }}
+                      onMouseLeave={e => { if (!isComplete) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-muted)'; } }}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {isComplete ? 'Completed' : 'Mark Complete'}
+                    </button>
+                  </div>
                 </div>
-              </section>
+              </Card>
+            </Reveal>
+
+            {/* ── Explanation + Real World: side by side if both exist ── */}
+            {(content.explanation || content.realExample) && (
+              <Reveal delay={0.05}>
+                <div className={`grid gap-4 ${content.explanation && content.realExample ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'}`}>
+                  {content.explanation && (
+                    <Card>
+                      <SectionTitle icon={BookOpen}>What it is</SectionTitle>
+                      <TextContent text={content.explanation} />
+                    </Card>
+                  )}
+                  {content.realExample && (
+                    <Card>
+                      <SectionTitle icon={Lightbulb}>Real World Example</SectionTitle>
+                      <TextContent text={content.realExample} />
+                    </Card>
+                  )}
+                </div>
+              </Reveal>
             )}
 
-            {/* ── 11. User Notes ────────────────────────────────────────────── */}
-            <section className="bg-white dark:bg-zinc-900/60 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">My Notes</h2>
-              <textarea
-                value={noteText}
-                onChange={(e) => setNoteText(e.target.value)}
-                placeholder="Jot down anything you want to remember about this topic…"
-                rows={5}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-zinc-950/80 border border-slate-200 dark:border-zinc-700 text-sm text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 dark:focus:border-amber-600 resize-none transition-all duration-150 font-sans"
-              />
-              <div className="flex items-center justify-between mt-3">
-                <span className="text-xs text-slate-400 dark:text-zinc-500">
-                  Notes are saved locally in your browser
-                </span>
-                <button
-                  onClick={handleSaveNote}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150 ${
-                    noteSaved
-                      ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
-                      : 'bg-amber-600 text-white hover:bg-amber-700 border border-transparent'
-                  }`}
-                >
-                  {noteSaved ? 'Saved!' : 'Save Note'}
-                </button>
+            {/* ── Code Example ── */}
+            {content.codeExample && (
+              <Reveal delay={0.1}>
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--accent)' }} />
+                    <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>Code Example</h2>
+                  </div>
+                  <CodeBlock code={content.codeExample} title={`${topic.slug || topic.id}.py`} showLineNumbers />
+                </div>
+              </Reveal>
+            )}
+
+            {/* ── Output Explanation ── */}
+            {content.outputExplanation && (
+              <Reveal delay={0.12}>
+                <Card>
+                  <SectionTitle icon={BookOpen}>Understanding the Output</SectionTitle>
+                  <TextContent text={content.outputExplanation} />
+                </Card>
+              </Reveal>
+            )}
+
+            {/* ── When to Use + When NOT to Use: always side by side ── */}
+            {(content.whenToUse || content.whenNotToUse) && (
+              <Reveal delay={0.15}>
+                <div className={`grid gap-4 ${content.whenToUse && content.whenNotToUse ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                  {content.whenToUse && (
+                    <Card>
+                      <SectionTitle icon={CheckCircle}>When to Use</SectionTitle>
+                      <TextContent text={content.whenToUse} />
+                    </Card>
+                  )}
+                  {content.whenNotToUse && (
+                    <Card>
+                      <SectionTitle icon={XCircle}>When NOT to Use</SectionTitle>
+                      <TextContent text={content.whenNotToUse} />
+                    </Card>
+                  )}
+                </div>
+              </Reveal>
+            )}
+
+            {/* ── Common Mistakes ── */}
+            {content.commonMistakes?.length > 0 && (
+              <Reveal delay={0.18}>
+                <Card>
+                  <SectionTitle icon={AlertTriangle}>Common Mistakes</SectionTitle>
+                  <ul className="space-y-3">
+                    {content.commonMistakes.map((mistake, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold shrink-0 mt-0.5" style={{ backgroundColor: 'var(--surface-2)', color: 'var(--accent)', border: '1px solid var(--border)' }}>
+                          {i + 1}
+                        </span>
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{mistake}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </Reveal>
+            )}
+
+            {/* ── Interview Notes — accent-tinted highlight panel ── */}
+            {content.interviewNotes?.length > 0 && (
+              <Reveal delay={0.2}>
+                <Card accent>
+                  <SectionTitle icon={Lightbulb}>Interview Notes</SectionTitle>
+                  <ul className="space-y-2.5">
+                    {content.interviewNotes.map((note, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        <span className="w-1.5 h-1.5 rounded-full shrink-0 mt-[7px]" style={{ backgroundColor: 'var(--accent)' }} />
+                        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>{note}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </Card>
+              </Reveal>
+            )}
+
+            {/* ── Related Topics ── */}
+            {relatedTopics.length > 0 && (
+              <Reveal delay={0.22}>
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Flame className="w-4 h-4" style={{ color: 'var(--accent)' }} />
+                    <h2 className="text-base font-bold" style={{ color: 'var(--text)' }}>Related Topics</h2>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {relatedTopics.map(related => (
+                      <Link
+                        key={related.id}
+                        href={`/learn/production/${related.id}`}
+                        className="flex items-center justify-between p-3 rounded-xl transition-all duration-150 group"
+                        style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium leading-snug line-clamp-2 mb-1" style={{ color: 'var(--text)' }}>{related.title}</p>
+                          <Badge variant={related.difficulty} size="sm">{related.difficulty.charAt(0).toUpperCase() + related.difficulty.slice(1)}</Badge>
+                        </div>
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--accent)' }} />
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </Reveal>
+            )}
+
+            {/* ── My Notes ── */}
+            <Reveal delay={0.24}>
+              <Card>
+                <h2 className="text-base font-bold mb-3" style={{ color: 'var(--text)' }}>My Notes</h2>
+                <textarea
+                  value={noteText}
+                  onChange={e => setNoteText(e.target.value)}
+                  placeholder="Jot down anything you want to remember…"
+                  rows={4}
+                  className="w-full px-4 py-3 rounded-xl text-sm resize-none font-sans focus:outline-none transition-all duration-150"
+                  style={{ backgroundColor: 'var(--surface-2)', border: '1px solid var(--border)', color: 'var(--text)' }}
+                />
+                <div className="flex items-center justify-between mt-3">
+                  <span className="text-xs" style={{ color: 'var(--text-subtle)' }}>Saved locally in your browser</span>
+                  <button
+                    onClick={handleSaveNote}
+                    className="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150"
+                    style={noteSaved ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)', border: '1px solid var(--accent-border)' } : { backgroundColor: 'var(--accent)', color: '#fff', border: '1px solid transparent' }}
+                  >
+                    {noteSaved ? 'Saved!' : 'Save Note'}
+                  </button>
+                </div>
+              </Card>
+            </Reveal>
+
+            {/* ── Prev / Next ── */}
+            <Reveal delay={0.26}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
+                {prevTopic ? (
+                  <Link
+                    href={`/learn/production/${prevTopic.id}`}
+                    className="flex flex-col gap-1 p-4 rounded-2xl transition-all duration-150"
+                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+                  >
+                    <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-subtle)' }}>
+                      <ChevronLeft className="w-3.5 h-3.5" /> Previous
+                    </span>
+                    <span className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: 'var(--text)' }}>{prevTopic.title}</span>
+                  </Link>
+                ) : <div />}
+
+                {nextTopic ? (
+                  <Link
+                    href={`/learn/production/${nextTopic.id}`}
+                    className="flex flex-col gap-1 p-4 rounded-2xl transition-all duration-150 text-right"
+                    style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+                  >
+                    <span className="flex items-center justify-end gap-1.5 text-xs" style={{ color: 'var(--text-subtle)' }}>
+                      Next <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                    <span className="text-sm font-semibold leading-snug line-clamp-2" style={{ color: 'var(--text)' }}>{nextTopic.title}</span>
+                  </Link>
+                ) : <div />}
               </div>
-            </section>
+            </Reveal>
 
-            {/* ── Prev / Next navigation ────────────────────────────────────── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-8">
-              {prevTopic ? (
-                <Link
-                  href={`/learn/production/${prevTopic.id}`}
-                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-700/60 transition-all duration-150"
-                >
-                  <span className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    Previous
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
-                    {prevTopic.title}
-                  </span>
-                </Link>
-              ) : (
-                <div />
-              )}
-
-              {nextTopic ? (
-                <Link
-                  href={`/learn/production/${nextTopic.id}`}
-                  className="group flex flex-col gap-1 p-4 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-amber-300 dark:hover:border-amber-700/60 transition-all duration-150 text-right"
-                >
-                  <span className="flex items-center justify-end gap-1.5 text-xs text-slate-500 dark:text-zinc-400 group-hover:text-amber-500 transition-colors">
-                    Next
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors">
-                    {nextTopic.title}
-                  </span>
-                </Link>
-              ) : (
-                <div />
-              )}
-            </div>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

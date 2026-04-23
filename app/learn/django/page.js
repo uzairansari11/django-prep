@@ -2,15 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { Database, ChevronLeft, BookOpen } from 'lucide-react';
+import { Layers, ChevronLeft, BookOpen } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import TopicCard from '@/components/ui/TopicCard';
 import ProgressBar from '@/components/ui/ProgressBar';
 import SearchBar from '@/components/ui/SearchBar';
 import DifficultyFilter from '@/components/practice/DifficultyFilter';
-import { modelTopics } from '@/data/models-topics';
+import { djangoInternalsTopics } from '@/data/django-internals-topics';
 
-export default function ModelsPage() {
+export default function DjangoInternalsPage() {
   const [search, setSearch] = useState('');
   const [difficulty, setDifficulty] = useState('all');
 
@@ -24,22 +24,21 @@ export default function ModelsPage() {
   } = useProgress();
 
   const completedCount = useMemo(
-    () => modelTopics.filter((t) => completedTopics.has(String(t.id))).length,
+    () => djangoInternalsTopics.filter((t) => completedTopics.has(String(t.id))).length,
     [completedTopics]
   );
 
-  const progress = Math.round((completedCount / modelTopics.length) * 100);
+  const progress = Math.round((completedCount / djangoInternalsTopics.length) * 100);
 
-  // Difficulty counts for the filter
   const counts = useMemo(() => ({
-    all: modelTopics.length,
-    beginner: modelTopics.filter((t) => t.difficulty === 'beginner').length,
-    intermediate: modelTopics.filter((t) => t.difficulty === 'intermediate').length,
-    advanced: modelTopics.filter((t) => t.difficulty === 'advanced').length,
+    all: djangoInternalsTopics.length,
+    beginner: djangoInternalsTopics.filter((t) => t.difficulty === 'beginner').length,
+    intermediate: djangoInternalsTopics.filter((t) => t.difficulty === 'intermediate').length,
+    advanced: djangoInternalsTopics.filter((t) => t.difficulty === 'advanced').length,
   }), []);
 
   const filtered = useMemo(() => {
-    let topics = modelTopics;
+    let topics = djangoInternalsTopics;
 
     if (difficulty !== 'all') {
       topics = topics.filter((t) => t.difficulty === difficulty);
@@ -68,10 +67,8 @@ export default function ModelsPage() {
 
   return (
     <div className="min-h-screen overflow-x-hidden" style={{ backgroundColor: 'var(--bg)' }}>
-      {/* Page header */}
       <div style={{ backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Breadcrumb */}
           <div className="flex flex-wrap items-center gap-2 text-sm mb-5">
             <Link
               href="/learn"
@@ -82,33 +79,33 @@ export default function ModelsPage() {
               Learning Center
             </Link>
             <span style={{ color: 'var(--text-muted)' }}>/</span>
-            <span className="font-medium" style={{ color: 'var(--text)' }}>Django Models</span>
+            <span className="font-medium" style={{ color: 'var(--text)' }}>Django Internals</span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="flex items-start gap-4">
+            <div className="flex flex-wrap items-start gap-4">
               <div
                 className="flex items-center justify-center w-12 h-12 rounded-2xl shrink-0"
                 style={{ backgroundColor: 'var(--accent)' }}
               >
-                <Database className="w-6 h-6 text-white" />
+                <Layers className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1
                   className="text-3xl font-bold tracking-tight"
                   style={{ color: 'var(--text)' }}
                 >
-                  Django Models
+                  Django Internals
                 </h1>
                 <p className="mt-1 max-w-lg" style={{ color: 'var(--text-muted)' }}>
-                  Everything you need to know about defining, customising, and relating Django models to your database.
+                  Deep dives into how Django works — project flow, middleware pipeline, file handling, and the request/response lifecycle.
                 </p>
               </div>
             </div>
 
             <div className="shrink-0 flex flex-col items-end gap-2">
               <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
-                {completedCount}/{modelTopics.length} completed
+                {completedCount}/{djangoInternalsTopics.length} completed
               </span>
               <div className="w-32">
                 <ProgressBar value={progress} color="accent" size="sm" />
@@ -119,7 +116,6 @@ export default function ModelsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-3 mb-8">
           <div className="flex-1">
             <SearchBar
@@ -135,12 +131,11 @@ export default function ModelsPage() {
           />
         </div>
 
-        {/* Results meta */}
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            {filtered.length === modelTopics.length
-              ? `${modelTopics.length} topics`
-              : `${filtered.length} of ${modelTopics.length} topics`}
+            {filtered.length === djangoInternalsTopics.length
+              ? `${djangoInternalsTopics.length} topics`
+              : `${filtered.length} of ${djangoInternalsTopics.length} topics`}
             {search && (
               <span className="ml-1" style={{ color: 'var(--accent)' }}>
                 matching &quot;{search}&quot;
@@ -158,7 +153,6 @@ export default function ModelsPage() {
           )}
         </div>
 
-        {/* Topic Grid */}
         {filtered.length === 0 ? (
           <div
             className="text-center py-16 rounded-2xl"
@@ -187,7 +181,7 @@ export default function ModelsPage() {
                 isBookmarked={isBookmarked(topic.id)}
                 onComplete={() => handleToggle(topic.id)}
                 onBookmark={() => toggleBookmark(topic.id)}
-                href={`/learn/models/${topic.id}`}
+                href={`/learn/django/${topic.id}`}
               />
             ))}
           </div>
