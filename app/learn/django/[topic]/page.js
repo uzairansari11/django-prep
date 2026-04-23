@@ -22,6 +22,7 @@ import Badge from '@/components/ui/Badge';
 import TopicList from '@/components/learn/TopicList';
 import { djangoInternalsTopics } from '@/data/django-internals-topics';
 import AnimatedConceptSection from '@/components/learn/AnimatedConceptSection';
+import DiagramVisual from '@/components/ui/DiagramVisual';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -287,6 +288,11 @@ export default function DjangoInternalsTopicPage({ params }) {
                   </div>
                 </div>
               </ContentCard>
+            </AnimatedConceptSection>
+
+            {/* Visual diagram */}
+            <AnimatedConceptSection delay={0.08}>
+              <DiagramVisual topicId={topic.id} />
             </AnimatedConceptSection>
 
             {/* 1. What it is */}

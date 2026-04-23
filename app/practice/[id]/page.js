@@ -8,7 +8,7 @@ import {
   ChevronLeft, ChevronRight, CheckCircle, Lightbulb, Eye, EyeOff,
   BookmarkPlus, Bookmark, Code2, FileText, Database, Play, AlertCircle,
   CheckCheck, XCircle, AlertTriangle, Loader2, X, Terminal, RotateCcw,
-  Copy, Check, ChevronDown, ChevronUp,
+  Copy, Check, ChevronDown, ChevronUp, MonitorPlay,
 } from 'lucide-react'
 import { python } from '@codemirror/lang-python'
 import { keymap, EditorView } from '@codemirror/view'
@@ -214,6 +214,7 @@ export default function ExercisePage({ params }) {
   const [noteText, setNoteText]   = useState('')
   const [noteSaved, setNoteSaved] = useState(false)
   const [mounted, setMounted]     = useState(false)
+  const [mobileTab, setMobileTab] = useState('problem')
 
   const noteSaveTimer = useRef(null)
   const submitRef     = useRef(null)
@@ -233,6 +234,7 @@ export default function ExercisePage({ params }) {
     setShowHints(false); setHintIdx(0); setShowSol(false)
     setShowExp(false); setShowData(false); setResult(null)
     setRunning(false); setAltSolTab('primary'); setNoteSaved(false)
+    setMobileTab('problem')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
@@ -242,6 +244,7 @@ export default function ExercisePage({ params }) {
     setTimeout(() => {
       const r = checkAnswer(code, exercise.solution, exercise.alternativeSolutions || [])
       setResult(r); setRunning(false); setOutTab('result')
+      setMobileTab('output')
       if (r.status === 'correct' && !isExerciseComplete(exercise.id)) markExerciseComplete(exercise.id)
     }, 600)
   }, [code, exercise, isExerciseComplete, markExerciseComplete])
@@ -335,6 +338,420 @@ export default function ExercisePage({ params }) {
 
       {/* ── Main panels ──────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-hidden">
+
+        {/* ── MOBILE LAYOUT (< md) ─────────────────────────────────────────── */}
+        <div className="md:hidden h-full flex flex-col" style={{ backgroundColor: cv.bg }}>
+
+          {/* Mobile content area */}
+          <div className="flex-1 overflow-hidden">
+
+            {/* Problem tab content */}
+            {mobileTab === 'problem' && (
+              <div className="h-full flex flex-col border-r" style={{ ...srf, ...brd }}>
+                <div className="flex border-b shrink-0" style={{ ...srf, ...brd }}>
+                  {[
+                    { key:'problem', icon:FileText, label:'Problem' },
+                    { key:'schema',  icon:Database, label:'Schema'  },
+                    { key:'notes',   icon:Code2,    label:'Notes'   },
+                  ].map(({ key, icon:Icon, label }) => (
+                    <button key={key} onClick={() => setTab(key)}
+                      className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all"
+                      style={tab===key
+                        ? { borderColor:cv.accent, color:cv.accent, backgroundColor:cv.accentL }
+                        : { borderColor:'transparent', ...muted }}
+                      onMouseEnter={e => { if(tab!==key){e.currentTarget.style.color=cv.text;e.currentTarget.style.backgroundColor=cv.surface2}}}
+                      onMouseLeave={e => { if(tab!==key){e.currentTarget.style.color=cv.muted;e.currentTarget.style.backgroundColor=''}}}>
+                      <Icon className="w-3.5 h-3.5" />{label}
+                    </button>
+                  ))}
+                </div>
+
+                {tab==='problem' && (
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-5 space-y-6">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1">
+                          <div className="flex flex-wrap gap-1.5 mb-2">
+                            <Badge variant={exercise.difficulty} size="sm">
+                              {exercise.difficulty.charAt(0).toUpperCase() + exercise.difficulty.slice(1)}
+                            </Badge>
+                            {exercise.topic && exercise.topic!=='all' && <Badge variant="default" size="sm">{exercise.topic}</Badge>}
+                          </div>
+                          <h1 className="text-base font-bold leading-snug" style={txt}>{exercise.title}</h1>
+                          {exercise.description && (
+                            <p className="text-[12px] mt-1.5 leading-relaxed" style={muted}>{exercise.description}</p>
+                          )}
+                        </div>
+                        <button onClick={() => toggleBookmark(exercise.id)}
+                          className="p-1.5 rounded-lg transition-all shrink-0 mt-0.5"
+                          style={{ color: bookmarked ? '#f59e0b' : cv.muted }}
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor='rgba(245,158,11,.12)'}
+                          onMouseLeave={e => e.currentTarget.style.backgroundColor=''}>
+                          {bookmarked
+                            ? <Bookmark className="w-4 h-4" style={{ fill:'#f59e0b',color:'#f59e0b' }} />
+                            : <BookmarkPlus className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <Divider />
+                      <div>
+                        <SectionLabel>Task</SectionLabel>
+                        <p className="text-sm leading-relaxed" style={txt}>{exercise.problemStatement}</p>
+                      </div>
+                      {exercise.expectedResult && (
+                        <div className="rounded-xl p-4 border" style={{ backgroundColor:cv.accentL, borderColor:cv.accentB, color:cv.accentT }}>
+                          <p className="text-[10px] font-bold uppercase tracking-widest mb-1.5">Expected Result</p>
+                          <p className="text-[13px] leading-relaxed font-medium">{exercise.expectedResult}</p>
+                        </div>
+                      )}
+                      {exercise.sampleData && (
+                        <div>
+                          <button onClick={() => setShowData(v => !v)} className="flex items-center justify-between w-full group">
+                            <SectionLabel>Sample Data</SectionLabel>
+                            {showData ? <ChevronUp className="w-3.5 h-3.5 mb-3" style={subtle} /> : <ChevronDown className="w-3.5 h-3.5 mb-3" style={subtle} />}
+                          </button>
+                          {showData && (
+                            <div className="rounded-xl border overflow-hidden" style={{ ...bg_, ...brd }}>
+                              <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ ...srf, ...brd }}>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor:'rgba(239,68,68,.6)' }} />
+                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor:'rgba(245,158,11,.6)' }} />
+                                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor:'rgba(16,185,129,.6)' }} />
+                                  <span className="text-[10px] font-mono ml-1" style={subtle}>seed.py</span>
+                                </div>
+                                <CopyBtn text={exercise.sampleData} />
+                              </div>
+                              <pre className="p-4 text-[11px] font-mono leading-relaxed overflow-x-auto" style={{ whiteSpace:'pre', color:'var(--text-muted)' }}>
+                                <code>{pyHighlight(exercise.sampleData)}</code>
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {exercise.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {exercise.tags.map(t => (
+                            <span key={t} className="px-2 py-0.5 rounded border text-[10px] font-medium" style={{ ...srf2, borderColor:cv.borderSt, ...muted }}>{t}</span>
+                          ))}
+                        </div>
+                      )}
+                      <Divider />
+                      <div>
+                        <SectionLabel>Hints</SectionLabel>
+                        {showHints && hints.slice(0, revealed).map((hint, i) => (
+                          <div key={i} className="flex gap-3 mb-3">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5"
+                              style={{ backgroundColor:'rgba(245,158,11,.15)', border:'1px solid rgba(245,158,11,.28)', color:'#f59e0b' }}>
+                              {i+1}
+                            </span>
+                            <p className="text-[13px] leading-relaxed" style={{ color:'#f59e0b' }}>{hint}</p>
+                          </div>
+                        ))}
+                        <button onClick={revealNextHint} disabled={showHints && revealed >= hints.length}
+                          className="flex items-center gap-1.5 text-[12px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          style={{ color:'#f59e0b' }}>
+                          <Lightbulb className="w-3.5 h-3.5" />
+                          {!showHints ? 'Show first hint' : revealed < hints.length ? `Next hint (${revealed}/${hints.length})` : 'All hints shown'}
+                        </button>
+                      </div>
+                      <Divider />
+                      <div>
+                        <button onClick={() => setShowSol(v => !v)}
+                          className="flex items-center gap-1.5 text-[12px] font-medium transition-colors mb-3" style={acc}>
+                          {showSol ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showSol ? 'Hide solution' : 'View solution'}
+                        </button>
+                        {showSol && (
+                          <div className="rounded-xl border overflow-hidden" style={{ ...bg_, borderColor:cv.accentB }}>
+                            {exercise.alternativeSolutions?.length > 0 && (
+                              <div className="flex border-b px-2 pt-1.5 gap-0.5" style={{ ...srf, ...brd }}>
+                                {['primary', ...exercise.alternativeSolutions.map((_, i) => `alt-${i}`)].map((st, i) => (
+                                  <button key={st} onClick={() => setAltSolTab(st)}
+                                    className="px-2.5 py-1 text-[10px] font-semibold rounded-t border-b-2 -mb-px transition-colors"
+                                    style={altSolTab===st ? { borderColor:cv.accent, color:cv.accent } : { borderColor:'transparent', ...muted }}>
+                                    {st==='primary' ? 'Primary' : `Alt ${i}`}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ ...srf, ...brd }}>
+                              <span className="text-[10px] font-mono" style={subtle}>solution.py</span>
+                              <CopyBtn text={altSolTab==='primary' ? exercise.solution : exercise.alternativeSolutions[parseInt(altSolTab.split('-')[1])]} />
+                            </div>
+                            <pre className="p-4 text-[12px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap" style={{ color:'#10b981' }}>
+                              {altSolTab==='primary' ? exercise.solution : exercise.alternativeSolutions[parseInt(altSolTab.split('-')[1])]}
+                            </pre>
+                            {exercise.explanation && (
+                              <div className="border-t" style={brd}>
+                                <button onClick={() => setShowExp(v => !v)}
+                                  className="flex items-center gap-1.5 px-4 py-2.5 text-[11px] font-medium w-full transition-colors" style={acc}>
+                                  <Eye className="w-3 h-3" />
+                                  {showExp ? 'Hide explanation' : 'Read explanation'}
+                                </button>
+                                {showExp && (
+                                  <p className="px-4 pb-4 text-[12px] leading-relaxed" style={muted}>{exercise.explanation}</p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => markExerciseComplete(exercise.id)}
+                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                        style={done
+                          ? { backgroundColor:'rgba(16,185,129,.10)', border:'1px solid rgba(16,185,129,.28)', color:'#10b981', cursor:'default' }
+                          : { backgroundColor:'#10b981', color:'white', border:'1px solid rgba(16,185,129,.3)', boxShadow:'0 1px 4px rgba(16,185,129,.25)' }}>
+                        <CheckCircle className="w-4 h-4" />
+                        {done ? 'Solved' : 'Mark as complete'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {tab==='schema' && (
+                  <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                    {exercise.schema ? (
+                      <div className="rounded-xl border overflow-hidden" style={{ ...bg_, ...brd }}>
+                        <div className="flex items-center justify-between px-3 py-1.5 border-b" style={{ ...srf, ...brd }}>
+                          <span className="text-[10px] font-mono" style={subtle}>models.py</span>
+                          <CopyBtn text={exercise.schema} />
+                        </div>
+                        <pre className="p-4 text-[11px] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap" style={txt}>
+                          {exercise.schema}
+                        </pre>
+                      </div>
+                    ) : <p className="text-xs italic" style={subtle}>No schema for this exercise.</p>}
+                  </div>
+                )}
+
+                {tab==='notes' && (
+                  <div className="flex-1 overflow-y-auto p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <SectionLabel>My Notes</SectionLabel>
+                      {noteSaved && (
+                        <span className="flex items-center gap-1 text-[10px] font-medium mb-3" style={{ color:'#10b981' }}>
+                          <CheckCircle className="w-3 h-3" />Saved
+                        </span>
+                      )}
+                    </div>
+                    <textarea
+                      value={noteText} onChange={handleNote}
+                      placeholder="Your thoughts, patterns to remember…"
+                      rows={12}
+                      className="w-full resize-none rounded-xl px-4 py-3 text-[12px] focus:outline-none leading-relaxed font-mono"
+                      style={{ backgroundColor:cv.surface2, border:`1px solid ${cv.borderSt}`, color:cv.text, caretColor:cv.accent }}
+                    />
+                    <p className="text-[10px]" style={subtle}>Auto-saved to your browser</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Code tab content */}
+            {mobileTab === 'code' && (
+              <div className="h-full flex flex-col" style={bg_}>
+                <div className="flex items-center justify-between px-4 h-9 border-b shrink-0" style={{ ...srf, ...brd }}>
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:'rgba(239,68,68,.55)' }} />
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:'rgba(245,158,11,.55)' }} />
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor:'rgba(16,185,129,.55)' }} />
+                    </div>
+                    <span className="text-[10px] font-mono" style={subtle}>solution.py — Python</span>
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    <CopyBtn text={code} />
+                    <button onClick={() => { setCode(''); setResult(null); setOutTab('expected') }}
+                      title="Reset" className="p-1.5 rounded transition-colors" style={muted}
+                      onMouseEnter={e => { e.currentTarget.style.color=cv.text;e.currentTarget.style.backgroundColor=cv.surface2 }}
+                      onMouseLeave={e => { e.currentTarget.style.color=cv.muted;e.currentTarget.style.backgroundColor='' }}>
+                      <RotateCcw className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  {mounted && (
+                    <CodeMirror
+                      value={code}
+                      onChange={v => setCode(v)}
+                      extensions={cmExts}
+                      theme={cmTheme}
+                      height="100%"
+                      style={{ height:'100%' }}
+                      basicSetup={{
+                        lineNumbers: true, foldGutter: false, highlightActiveLine: true,
+                        highlightSelectionMatches: true, bracketMatching: true, closeBrackets: true,
+                        autocompletion: true, indentOnInput: true, tabSize: 4, defaultKeymap: true,
+                      }}
+                      placeholder="# Write your Django ORM query here…"
+                    />
+                  )}
+                </div>
+                <div className="flex items-center gap-2.5 px-4 py-2.5 border-t shrink-0" style={{ ...srf, ...brd }}>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={!code.trim() || running}
+                    className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[12px] font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    style={{ backgroundColor:'#10b981', boxShadow:'0 1px 6px rgba(16,185,129,.30)' }}
+                    onMouseEnter={e => { if(!running&&code.trim()) e.currentTarget.style.backgroundColor='#059669' }}
+                    onMouseLeave={e => { e.currentTarget.style.backgroundColor='#10b981' }}>
+                    {running ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                    {running ? 'Running…' : 'Run Tests'}
+                  </button>
+                  <button
+                    onClick={revealNextHint}
+                    disabled={showHints && revealed >= hints.length}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                    style={{ color:'#f59e0b', backgroundColor:'rgba(245,158,11,.10)', border:'1px solid rgba(245,158,11,.25)' }}>
+                    <Lightbulb className="w-3.5 h-3.5" />
+                    {revealed > 0 ? `Hint (${revealed}/${hints.length})` : 'Hint'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Output tab content */}
+            {mobileTab === 'output' && (
+              <div className="h-full flex flex-col" style={{ ...bg_, borderTop:`1px solid ${cv.border}` }}>
+                <div className="flex items-center border-b shrink-0" style={{ ...srf, ...brd }}>
+                  {[
+                    { key:'expected', label:'Expected Output', icon:Terminal },
+                    { key:'result',   label:'Test Result',     icon:result ? cfg.icon : CheckCircle },
+                  ].map(({ key, label, icon:Icon }) => (
+                    <button key={key} onClick={() => setOutTab(key)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 text-[11px] font-semibold border-b-2 transition-all"
+                      style={outTab===key
+                        ? { borderColor:cv.accent, color:cv.accent, backgroundColor:cv.accentL }
+                        : { borderColor:'transparent', ...muted }}>
+                      <Icon className="w-3.5 h-3.5" style={{ color:key==='result'&&result?cfg.color:undefined }} />
+                      {label}
+                      {key==='result' && result && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold"
+                          style={{ backgroundColor:`${cfg.color}22`, color:cfg.color }}>
+                          {result.score}/100
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                  <div className="ml-auto px-3">
+                    {running && <Loader2 className="w-3.5 h-3.5 animate-spin" style={subtle} />}
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto">
+                  {outTab==='expected' && (
+                    <div className="p-5 space-y-4 font-mono text-[12px]">
+                      <div>
+                        <p className="text-[9px] font-sans font-bold uppercase tracking-widest mb-2" style={subtle}>Django Shell</p>
+                        <pre className="leading-relaxed whitespace-pre-wrap" style={{ color:'#10b981' }}>{simOutput}</pre>
+                      </div>
+                      <Divider />
+                      <div>
+                        <p className="text-[9px] font-sans font-bold uppercase tracking-widest mb-2" style={subtle}>SQL Generated</p>
+                        <pre className="leading-relaxed whitespace-pre-wrap text-[11px]" style={{ color:'#60a5fa' }}>
+{`-- Approximate SQL\nSELECT * FROM "myapp_${(exercise.solution?.match(/(\w+)\.objects/)?.[1]||'model').toLowerCase()}"${exercise.solution?.includes('.filter(')?' \nWHERE -- filter conditions':''}\nLIMIT 21;`}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                  {outTab==='result' && (
+                    <div className="p-5 space-y-4">
+                      {!result ? (
+                        <div className="flex flex-col items-center justify-center py-10 gap-3">
+                          <Terminal className="w-6 h-6" style={{ color:cv.borderSt }} />
+                          <p className="text-[12px]" style={subtle}>Run your code to see results</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-start gap-3 p-4 rounded-xl border"
+                            style={{ backgroundColor:cfg.bg, borderColor:cfg.border }}>
+                            <Ico className="w-5 h-5 shrink-0 mt-0.5" style={{ color:cfg.color }} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[14px] font-bold" style={{ color:cfg.color }}>{cfg.label}</p>
+                              <p className="text-[12px] mt-0.5 leading-snug" style={muted}>{result.feedback}</p>
+                            </div>
+                            <button onClick={() => setResult(null)} style={subtle}
+                              onMouseEnter={e=>e.currentTarget.style.color=cv.text}
+                              onMouseLeave={e=>e.currentTarget.style.color=cv.subtle}>
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-[10px] mb-1.5" style={subtle}>
+                              <span>Score</span>
+                              <span className="font-bold" style={txt}>{result.score}/100</span>
+                            </div>
+                            <div className="h-2 rounded-full overflow-hidden" style={srf2}>
+                              <div className="h-full rounded-full transition-all duration-700"
+                                style={{ width:`${result.score}%`, backgroundColor:cfg.bar }} />
+                            </div>
+                          </div>
+                          {result.details && (
+                            <div className="flex flex-wrap gap-1.5">
+                              {[['modelMatch','Model'],['methodsMatch','Methods'],['argsMatch','Arguments']].map(([k,label]) =>
+                                result.details[k]!==undefined ? (
+                                  <span key={k} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border"
+                                    style={result.details[k]
+                                      ? { backgroundColor:'rgba(16,185,129,.10)', color:'#10b981', borderColor:'rgba(16,185,129,.28)' }
+                                      : { backgroundColor:'rgba(239,68,68,.10)', color:'#ef4444', borderColor:'rgba(239,68,68,.28)' }}>
+                                    {result.details[k] ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                                    {label}
+                                  </span>
+                                ) : null
+                              )}
+                            </div>
+                          )}
+                          {result.issues?.length > 0 && (
+                            <ul className="space-y-1.5">
+                              {result.issues.map((issue, i) => (
+                                <li key={i} className="flex items-start gap-2 text-[12px]" style={muted}>
+                                  <span className="mt-2 w-1 h-1 rounded-full shrink-0" style={{ backgroundColor:cv.borderSt }} />
+                                  {issue}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {result.status==='correct' && (
+                            <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl border"
+                              style={{ backgroundColor:'rgba(16,185,129,.10)', borderColor:'rgba(16,185,129,.28)' }}>
+                              <CheckCheck className="w-4 h-4 shrink-0" style={{ color:'#10b981' }} />
+                              <p className="text-[12px] font-semibold" style={{ color:'#10b981' }}>Exercise marked as complete!</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Mobile bottom tab bar ─────────────────────────────────────── */}
+          <div className="h-14 shrink-0 flex border-t" style={{ backgroundColor:'var(--surface)', borderColor:'var(--border)' }}>
+            {[
+              { key:'problem', icon:FileText,    label:'Problem' },
+              { key:'code',    icon:Code2,        label:'Code'    },
+              { key:'output',  icon:MonitorPlay,  label:'Output'  },
+            ].map(({ key, icon:Icon, label }) => (
+              <button
+                key={key}
+                onClick={() => setMobileTab(key)}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition-colors"
+                style={mobileTab===key
+                  ? { backgroundColor:'var(--accent-light)', color:'var(--accent-text)', borderTop:'2px solid var(--accent)' }
+                  : { color:'var(--text-muted)', borderTop:'2px solid transparent' }}>
+                <Icon className="w-4.5 h-4.5" style={{ width:'1.125rem', height:'1.125rem' }} />
+                {label}
+                {key==='output' && result && (
+                  <span className="absolute top-1 right-1/2 translate-x-4 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: cfg?.color || '#10b981' }} />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── DESKTOP LAYOUT (md+) ─────────────────────────────────────────── */}
+        <div className="hidden md:block h-full">
         <PanelGroup direction="horizontal" className="h-full">
 
           {/* ── LEFT: Problem panel ──────────────────────────────────────── */}
@@ -795,6 +1212,7 @@ export default function ExercisePage({ params }) {
             </PanelGroup>
           </Panel>
         </PanelGroup>
+        </div>{/* end desktop wrapper */}
       </div>
     </div>
   )
