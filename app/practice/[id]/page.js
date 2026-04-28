@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect, use, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
   ChevronLeft, ChevronRight, CheckCircle2, Lightbulb, Eye, EyeOff,
@@ -161,7 +160,6 @@ function PaneTabs({ tabs, value, onChange }) {
 // ─── Page ───────────────────────────────────────────────────────────────────
 export default function ExercisePage({ params }) {
   const { id } = use(params);
-  const router = useRouter();
   const { isDark: appDark } = useAppSettings();
 
   const idx = exercises.findIndex(e => e.id === id);
@@ -312,27 +310,45 @@ export default function ExercisePage({ params }) {
             {bookmarked ? <Bookmark className="w-3.5 h-3.5 fill-current" /> : <BookmarkPlus className="w-3.5 h-3.5" />}
           </button>
           <div className="hidden sm:flex items-center gap-0.5 ml-1">
-            <button
-              disabled={!prev}
-              onClick={() => prev && router.push(`/practice/${prev.id}`)}
-              className="p-1 rounded disabled:opacity-30 transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-              title="Previous"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+            {prev ? (
+              <Link
+                href={`/practice/${prev.id}`}
+                className="p-1 rounded transition-colors inline-flex"
+                style={{ color: 'var(--text-muted)' }}
+                title="Previous"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                className="p-1 rounded inline-flex opacity-30"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </span>
+            )}
             <span className="text-[11px] tabular-nums px-1" style={{ color: 'var(--text-subtle)' }}>
               {idx + 1}/{exercises.length}
             </span>
-            <button
-              disabled={!next}
-              onClick={() => next && router.push(`/practice/${next.id}`)}
-              className="p-1 rounded disabled:opacity-30 transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-              title="Next"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            {next ? (
+              <Link
+                href={`/practice/${next.id}`}
+                className="p-1 rounded transition-colors inline-flex"
+                style={{ color: 'var(--text-muted)' }}
+                title="Next"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            ) : (
+              <span
+                aria-disabled="true"
+                className="p-1 rounded inline-flex opacity-30"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </span>
+            )}
           </div>
         </div>
       </header>

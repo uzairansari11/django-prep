@@ -1,20 +1,29 @@
+import Link from 'next/link';
 import { CheckCircle2, Bookmark, BookmarkCheck } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
 
 export default function ExerciseCard({
   exercise,
+  href,
   isCompleted = false,
   isBookmarked = false,
   onComplete,
   onBookmark,
-  onClick,
 }) {
   const { id, title, description, difficulty, topic } = exercise;
 
+  // Stop the inner action button (complete / bookmark) from bubbling up
+  // and triggering the Link's navigation. preventDefault is what cancels
+  // the link click; stopPropagation is just defensive.
+  const stopLink = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
-    <div
-      onClick={onClick}
+    <Link
+      href={href}
       className={cn(
         'group cursor-pointer flex flex-col gap-2 rounded p-4 transition-colors duration-150'
       )}
@@ -42,7 +51,8 @@ export default function ExerciseCard({
           )}
           {onBookmark && (
             <button
-              onClick={(e) => { e.stopPropagation(); onBookmark(id); }}
+              type="button"
+              onClick={(e) => { stopLink(e); onBookmark(id); }}
               title={isBookmarked ? 'Remove bookmark' : 'Bookmark'}
               className="p-0.5 rounded-sm transition-colors duration-150"
               style={{ color: isBookmarked ? 'var(--accent)' : 'var(--text-subtle)' }}
@@ -52,7 +62,8 @@ export default function ExerciseCard({
           )}
           {onComplete && !isCompleted && (
             <button
-              onClick={(e) => { e.stopPropagation(); onComplete(id); }}
+              type="button"
+              onClick={(e) => { stopLink(e); onComplete(id); }}
               title="Mark complete"
               className="p-0.5 rounded-sm transition-colors duration-150"
               style={{ color: 'var(--text-subtle)' }}
@@ -78,6 +89,6 @@ export default function ExerciseCard({
           {description}
         </p>
       )}
-    </div>
+    </Link>
   );
 }

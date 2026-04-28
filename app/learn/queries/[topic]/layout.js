@@ -1,11 +1,12 @@
 import TopicShell from '@/components/learn/TopicShell';
 import { queryTopics } from '@/data/query-topics';
 
-export default async function QueriesTopicLayout({ children, params }) {
-  const { topic: topicId } = await params;
+// Plain server component, no params. The active topic is derived from
+// pathname inside TopicShell, so the layout itself never has to re-render
+// when the user navigates between sibling topics.
+export default function QueriesTopicLayout({ children }) {
   return (
     <TopicShell
-      topicId={topicId}
       topics={queryTopics}
       sectionLabel="Queries"
       sectionHref="/learn/queries"

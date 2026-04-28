@@ -2,7 +2,6 @@
 
 import { Suspense, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { exercises } from '@/data/exercises';
 import { useProgress } from '@/hooks/useProgress';
@@ -28,7 +27,6 @@ export default function PracticePage() {
 }
 
 function PracticePageBody() {
-  const router = useRouter();
   const {
     isExerciseComplete,
     markExerciseComplete,
@@ -183,11 +181,11 @@ function PracticePageBody() {
             <ExerciseCard
               key={ex.id}
               exercise={ex}
+              href={`/practice/${ex.id}`}
               isCompleted={isExerciseComplete(ex.id)}
               isBookmarked={isBookmarked(ex.id)}
               onComplete={() => handleComplete(ex.id)}
               onBookmark={() => toggleBookmark(ex.id)}
-              onClick={() => router.push(`/practice/${ex.id}`)}
             />
           ))}
         </div>

@@ -1,11 +1,9 @@
 import TopicShell from '@/components/learn/TopicShell';
 import { drfSerializersTopics } from '@/data/drf-serializers-topics';
 
-export default async function DrfSerializersTopicLayout({ children, params }) {
-  const { topic: topicId } = await params;
+export default function DrfSerializersTopicLayout({ children }) {
   return (
     <TopicShell
-      topicId={topicId}
       topics={drfSerializersTopics}
       sectionLabel="DRF Serializers"
       sectionHref="/learn/drf-serializers"

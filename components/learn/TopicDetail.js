@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import {
   CheckCircle,
@@ -48,19 +48,21 @@ export default function TopicDetail({
 
   const [noteText, setNoteText] = useState(() => (topic ? getNote(topic.id) : ''));
   const [noteSaved, setNoteSaved] = useState(false);
-  const articleRef = useRef(null);
 
-  // When the user clicks a sibling topic, the layout stays mounted (so the
-  // sidebar keeps its scroll), but we DO want the article to start at the
-  // top — otherwise long previous content leaves the new topic's header
-  // off-screen. Keyed on topic.id only so saving a note (which changes
-  // getNote's identity) doesn't yank the user back to the top.
+  // On topic change: pull the saved note for the new topic and reset the
+  // app's main scroll container to absolute top. We scroll #page-scroll
+  // directly (rather than calling scrollIntoView on the article) because
+  // the mobile breadcrumb is `sticky top-0` inside the same container —
+  // scrollIntoView would align the article header underneath it. Setting
+  // scrollTop=0 puts the breadcrumb in its natural flow position with the
+  // article header fully visible below.
+  // Keyed on topic.id only so saving a note (which changes getNote's
+  // identity) doesn't yank the reader back to the top.
   useEffect(() => {
     if (!topic) return;
     setNoteText(getNote(topic.id));
-    if (articleRef.current) {
-      articleRef.current.scrollIntoView({ block: 'start', behavior: 'auto' });
-    }
+    const scroller = document.getElementById('page-scroll');
+    if (scroller) scroller.scrollTop = 0;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topic?.id]);
 
@@ -101,10 +103,7 @@ export default function TopicDetail({
     topicIndex >= 0 && topicIndex < topics.length - 1 ? topics[topicIndex + 1] : null;
 
   return (
-    <article
-      ref={articleRef}
-      className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8"
-    >
+    <article className="max-w-3xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
       <header
         className="pb-6 mb-8 border-b"

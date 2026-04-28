@@ -90,6 +90,11 @@
     transition: background-color 200ms ease, color 200ms ease;
   }
 
+  /* Stop touch scrolls inside the app shell from chaining out to the
+     document root — fixes the faint second scrollbar that mobile Safari
+     otherwise paints alongside #page-scroll. */
+  #page-scroll { overscroll-behavior: contain; }
+
   .sidebar-no-scrollbar { scrollbar-width: none; }
   .sidebar-no-scrollbar::-webkit-scrollbar { display: none; }
 
