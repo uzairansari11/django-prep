@@ -1,4 +1,5 @@
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import Providers from '@/components/layout/Providers';
 import Navbar from '@/components/layout/Navbar';
@@ -46,11 +47,12 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
       className={inter.variable}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
-      </head>
-
       <body className="h-screen overflow-hidden antialiased" style={{ backgroundColor: 'var(--bg)' }}>
+        {/* Sync theme class before React hydrates — prevents the light-mode
+            flash on reload when the user has dark mode saved. */}
+        <Script id="theme-bootstrap" strategy="beforeInteractive">
+          {themeBootstrap}
+        </Script>
         <Providers>
           <div className="flex flex-col h-full">
             <Navbar />

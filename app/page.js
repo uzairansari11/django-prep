@@ -146,7 +146,7 @@ export default function DashboardPage() {
             <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
               {label}
             </p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
+            <p suppressHydrationWarning className="mt-2 text-2xl font-semibold tabular-nums" style={{ color: 'var(--text)' }}>
               {value}
             </p>
             <p suppressHydrationWarning className="mt-0.5 text-[12px]" style={{ color: 'var(--text-subtle)' }}>
