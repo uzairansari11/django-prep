@@ -97,7 +97,7 @@ export default function Navbar() {
             <button
               onClick={toggleFullscreen}
               aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-              className="hidden sm:inline-flex p-2 rounded transition-colors duration-150"
+              className="inline-flex p-2 rounded transition-colors duration-150"
               style={{ color: 'var(--text-muted)' }}
             >
               {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}

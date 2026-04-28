@@ -49,8 +49,11 @@ export default function BottomNav() {
   return (
     <>
       {/* Bottom dock — visible below lg only */}
+      {/* Sits as a flex sibling to <main> in the root layout, so the main
+          scroll-container ends exactly at the top of this nav — no overlap,
+          no scrollbar running behind it. */}
       <nav
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t"
+        className="lg:hidden shrink-0 border-t"
         style={{
           backgroundColor: 'var(--bg)',
           borderColor: 'var(--border)',

@@ -273,7 +273,11 @@ export default function ExercisePage({ params }) {
   const cfg = result ? STATUS_CFG[result.status] ?? STATUS_CFG.wrong : null;
 
   return (
-    <div className="flex flex-col" style={{ height: 'calc(100vh - 3.5rem)', backgroundColor: 'var(--bg)' }}>
+    // Fill the parent main element exactly — main already deducts the
+    // navbar (top) and bottom-nav padding (bottom). overflow-hidden keeps
+    // the outer page-scroll container from scrolling; only the internal
+    // panes scroll, so there's a single visible scrollbar at a time.
+    <div className="flex flex-col overflow-hidden" style={{ height: '100%', backgroundColor: 'var(--bg)' }}>
 
       {/* Header */}
       <header

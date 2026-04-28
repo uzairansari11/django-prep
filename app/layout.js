@@ -58,7 +58,7 @@ export default function RootLayout({ children }) {
             <Navbar />
             <main
               id="page-scroll"
-              className="flex-1 overflow-y-auto pb-16 lg:pb-0"
+              className="flex-1 overflow-y-auto overflow-x-hidden"
               style={{ backgroundColor: 'var(--bg)' }}
             >
               <PageTransition>{children}</PageTransition>
