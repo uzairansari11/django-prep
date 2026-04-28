@@ -67,13 +67,12 @@ export default function RootLayout({ children }) {
             <Navbar />
             <main
               id="page-scroll"
-              className="flex-1 overflow-y-auto overflow-x-hidden lg:pb-0"
-              style={{
-                backgroundColor: 'var(--bg)',
-                // Reserve space for the fixed glass bottom nav (~56px)
-                // plus the device safe-area inset on notched devices.
-                paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
-              }}
+              // Reserve space for the fixed glass bottom nav (~56px) +
+              // device safe-area inset on mobile, but drop it entirely on
+              // lg+ where the bottom nav is hidden — otherwise the desktop
+              // page sits above an empty band of dead space.
+              className="flex-1 overflow-y-auto overflow-x-hidden pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+              style={{ backgroundColor: 'var(--bg)' }}
             >
               <PageTransition>{children}</PageTransition>
             </main>
