@@ -15,7 +15,7 @@ export default function DifficultyFilter({
     <div
       role="group"
       aria-label="Filter by difficulty"
-      className={`flex items-center gap-1.5 flex-wrap ${className}`}
+      className={`flex items-center gap-1 flex-wrap ${className}`}
     >
       {FILTERS.map(({ value, label, dot }) => {
         const isActive = selected === value;
@@ -26,12 +26,12 @@ export default function DifficultyFilter({
             key={value}
             onClick={() => onChange(value)}
             aria-pressed={isActive}
-            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-medium transition-all duration-150"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[12px] font-medium transition-colors duration-150"
             style={isActive
               ? {
-                  backgroundColor: 'var(--accent)',
-                  color: '#ffffff',
-                  border: '1px solid var(--accent)',
+                  backgroundColor: 'var(--text)',
+                  color: 'var(--bg)',
+                  border: '1px solid var(--text)',
                 }
               : {
                   backgroundColor: 'var(--surface)',
@@ -39,24 +39,10 @@ export default function DifficultyFilter({
                   border: '1px solid var(--border)',
                 }
             }
-            onMouseEnter={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.backgroundColor = 'var(--surface-2)';
-                e.currentTarget.style.color = 'var(--text)';
-                e.currentTarget.style.borderColor = 'var(--border-strong)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) {
-                e.currentTarget.style.backgroundColor = 'var(--surface)';
-                e.currentTarget.style.color = 'var(--text-muted)';
-                e.currentTarget.style.borderColor = 'var(--border)';
-              }
-            }}
           >
             {dot && (
               <span
-                className="w-2 h-2 rounded-full shrink-0"
+                className="w-1.5 h-1.5 rounded-full shrink-0"
                 style={{ backgroundColor: dot }}
                 aria-hidden="true"
               />
@@ -64,11 +50,11 @@ export default function DifficultyFilter({
             {label}
             {count !== undefined && (
               <span
-                className="text-xs px-1.5 py-0.5 rounded-md font-semibold leading-none"
-                style={isActive
-                  ? { backgroundColor: 'rgba(255,255,255,0.22)', color: '#ffffff' }
-                  : { backgroundColor: 'var(--surface-2)', color: 'var(--text-muted)' }
-                }
+                className="text-[10px] tabular-nums"
+                style={{
+                  color: isActive ? 'var(--bg)' : 'var(--text-subtle)',
+                  opacity: isActive ? 0.7 : 1,
+                }}
               >
                 {count}
               </span>

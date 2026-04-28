@@ -66,7 +66,7 @@ export default function SearchBar({
         onChange={handleChange}
         placeholder={placeholder}
         className={cn(
-          'w-full pl-9 pr-9 py-2 rounded-xl text-sm transition-all duration-150',
+          'w-full pl-9 pr-9 py-2 rounded text-[13px] transition-all duration-150',
           // Hide native clear button that browsers add for type="search"
           '[&::-webkit-search-cancel-button]:appearance-none'
         )}
@@ -77,13 +77,10 @@ export default function SearchBar({
           outline: 'none',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = 'var(--accent)';
-          e.currentTarget.style.boxShadow = '0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)';
-          // Highlight search icon on focus via sibling — handled by CSS group-focus-within if needed
+          e.currentTarget.style.borderColor = 'var(--text-subtle)';
         }}
         onBlur={(e) => {
           e.currentTarget.style.borderColor = 'var(--border)';
-          e.currentTarget.style.boxShadow = '';
         }}
       />
 
@@ -93,7 +90,7 @@ export default function SearchBar({
           onClick={handleClear}
           type="button"
           aria-label="Clear search"
-          className="absolute right-2.5 p-0.5 rounded-md transition-all duration-150"
+          className="absolute right-2.5 p-0.5 rounded transition-all duration-150"
           style={{ color: 'var(--text-subtle)' }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = 'var(--surface-2)';

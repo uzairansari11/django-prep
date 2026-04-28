@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { CheckCircle2, Circle, ChevronRight } from 'lucide-react';
-import Badge from '@/components/ui/Badge';
+import { CheckCircle2, Circle } from 'lucide-react';
 import { cn, groupBy } from '@/lib/utils';
 
 export default function TopicList({
@@ -14,18 +12,12 @@ export default function TopicList({
 }) {
   const hasSections = topics.some((t) => t.section);
   const grouped = hasSections ? groupBy(topics, 'section') : { '': topics };
-  const activeRef = useRef(null);
-
-  /* Auto-scroll the active item into view when topic changes */
-  useEffect(() => {
-    if (activeRef.current) {
-      activeRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-  }, [currentTopicId]);
+  // No auto-scroll on selection — user keeps their scroll position when
+  // clicking through topics.
 
   if (topics.length === 0) {
     return (
-      <p className="text-sm text-center py-6" style={{ color: 'var(--text-subtle)' }}>
+      <p className="text-[12px] text-center py-6" style={{ color: 'var(--text-subtle)' }}>
         No topics available.
       </p>
     );
@@ -37,7 +29,7 @@ export default function TopicList({
         <div key={section}>
           {section && (
             <p
-              className="px-2 mb-1.5 text-[10px] uppercase tracking-widest font-semibold"
+              className="px-2 mb-1.5 text-[10px] uppercase tracking-wider font-semibold"
               style={{ color: 'var(--text-subtle)' }}
             >
               {section}
@@ -53,57 +45,37 @@ export default function TopicList({
                 <li
                   key={topic.id}
                   id={`topic-item-${topic.id}`}
-                  ref={isCurrent ? activeRef : null}
                 >
                   <button
                     onClick={() => onSelect?.(topic)}
                     aria-current={isCurrent ? 'page' : undefined}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-left group transition-colors duration-150"
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded text-[13px] text-left transition-colors duration-150"
                     style={
                       isCurrent
-                        ? { backgroundColor: 'var(--accent-light)', color: 'var(--accent-text)', fontWeight: 600 }
-                        : isDone
-                        ? { color: '#22c55e', fontWeight: 500 }
-                        : { color: 'var(--text-muted)', fontWeight: 500 }
+                        ? { backgroundColor: 'var(--surface-2)', color: 'var(--text)', fontWeight: 500 }
+                        : { color: 'var(--text-muted)', fontWeight: 400 }
                     }
                     onMouseEnter={(e) => {
                       if (!isCurrent) {
-                        e.currentTarget.style.backgroundColor = 'var(--surface-2)';
                         e.currentTarget.style.color = 'var(--text)';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isCurrent) {
-                        e.currentTarget.style.backgroundColor = '';
-                        e.currentTarget.style.color = isDone ? '#22c55e' : 'var(--text-muted)';
+                        e.currentTarget.style.color = 'var(--text-muted)';
                       }
                     }}
                   >
-                    {/* Status icon */}
-                    <span className="shrink-0">
+                    <span className="shrink-0 w-3 h-3 flex items-center justify-center">
                       {isDone ? (
-                        <CheckCircle2 className="w-4 h-4" style={{ color: '#22c55e' }} />
+                        <CheckCircle2 className="w-3 h-3" style={{ color: 'var(--accent)' }} />
                       ) : (
-                        <Circle
-                          className="w-4 h-4"
-                          style={{ color: isCurrent ? 'var(--accent)' : 'var(--border-strong)' }}
-                        />
+                        <Circle className="w-3 h-3" style={{ color: isCurrent ? 'var(--text)' : 'var(--text-subtle)', opacity: 0.6 }} />
                       )}
                     </span>
-
-                    {/* Title */}
                     <span className="flex-1 min-w-0 truncate leading-snug">
                       {topic.title}
                     </span>
-
-                    {/* Difficulty / arrow */}
-                    {topic.difficulty && !isCurrent ? (
-                      <Badge variant={topic.difficulty} size="sm" className="shrink-0 opacity-80">
-                        {topic.difficulty.slice(0, 3)}
-                      </Badge>
-                    ) : isCurrent ? (
-                      <ChevronRight className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
-                    ) : null}
                   </button>
                 </li>
               );

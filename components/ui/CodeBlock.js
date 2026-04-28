@@ -173,7 +173,7 @@ export default function CodeBlock({
   return (
     <div
       className={cn(
-        'code-block rounded-xl overflow-hidden border border-slate-700/60 shadow-xl shadow-black/20',
+        'code-block rounded overflow-hidden border border-slate-700/60 shadow-xl shadow-black/20',
         className
       )}
     >
@@ -202,7 +202,7 @@ export default function CodeBlock({
             onClick={handleCopy}
             title="Copy code"
             className={cn(
-              'flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all duration-150',
+              'flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all duration-150',
               copied
                 ? 'bg-emerald-600/30 text-emerald-400 border border-emerald-600/40'
                 : 'bg-slate-700/50 text-slate-400 border border-slate-600/40 hover:bg-slate-600/60 hover:text-slate-200'

@@ -1,270 +1,79 @@
 @import "tailwindcss";
 
-/* ─── Tailwind v4: class-based dark mode ─────────────────────────────────── */
 @variant dark (&:where(.dark, .dark *));
 
-/* ─── Design tokens ──────────────────────────────────────────────────────── */
 @theme {
-  --font-sans: var(--font-body, 'Inter'), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   THEME SYSTEM — CSS Custom Properties
-   Each theme overrides the accent variables. Backgrounds use warm neutrals.
-   Dark mode handled by .dark class on <html>.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
+/* ─── Single Vercel-style theme. Light + Dark only. ──────────────────────── */
 @layer base {
-
-  /* ── Shared base (light mode defaults — Claude / warm orange) ─────────── */
   :root {
-    /* Backgrounds */
-    --bg:          #fafaf9;
-    --bg-subtle:   #f5f5f4;
-    --surface:     #ffffff;
-    --surface-2:   #f5f5f4;
-    /* Borders */
-    --border:        #e7e5e4;
-    --border-strong: #d6d3d1;
-    /* Text */
-    --text:        #1c1917;
-    --text-muted:  #78716c;
-    --text-subtle: #a8a29e;
-    /* Accent — Claude orange */
-    --accent:         #ea580c;
-    --accent-hover:   #c2410c;
-    --accent-light:   #fff7ed;
-    --accent-border:  #fed7aa;
-    --accent-text:    #9a3412;
-    --accent-ring:    #fdba74;
-    /* Font */
-    --font-body: 'Inter', system-ui, sans-serif;
+    --bg:           #ffffff;
+    --bg-subtle:    #fafafa;
+    --surface:      #ffffff;
+    --surface-2:    #f4f4f5;
+    --border:        #eaeaea;
+    --border-strong: #d4d4d4;
+    --text:         #0a0a0a;
+    --text-muted:   #666666;
+    --text-subtle:  #a1a1aa;
+    --accent:        #0a0a0a;
+    --accent-hover:  #262626;
+    --accent-light:  #f4f4f5;
+    --accent-border: #d4d4d4;
+    --accent-text:   #0a0a0a;
+    --accent-ring:   #a1a1aa;
+
+    /* Semantic colors */
+    --success:        #16a34a;
+    --success-bg:     #f0fdf4;
+    --success-border: #bbf7d0;
+    --warning:        #ca8a04;
+    --warning-bg:     #fefce8;
+    --warning-border: #fde68a;
+    --danger:         #dc2626;
+    --danger-bg:      #fef2f2;
+    --danger-border:  #fecaca;
+    --info:           #2563eb;
+    --info-bg:        #eff6ff;
+    --info-border:    #bfdbfe;
   }
 
-  /* ── DARK MODE base ───────────────────────────────────────────────────── */
   .dark {
-    --bg:          #141210;
-    --bg-subtle:   #1c1917;
-    --surface:     #1c1917;
-    --surface-2:   #292524;
-    --border:        #292524;
-    --border-strong: #44403c;
-    --text:        #fafaf9;
-    --text-muted:  #a8a29e;
-    --text-subtle: #78716c;
-    /* Accent stays orange, just slightly warmer */
-    --accent:         #fb923c;
-    --accent-hover:   #f97316;
-    --accent-light:   #1c1007;
-    --accent-border:  #431407;
-    --accent-text:    #fdba74;
-    --accent-ring:    #ea580c;
-  }
+    --bg:           #0a0a0a;
+    --bg-subtle:    #111111;
+    --surface:      #0f0f0f;
+    --surface-2:    #1a1a1a;
+    --border:        #262626;
+    --border-strong: #3a3a3a;
+    --text:         #fafafa;
+    --text-muted:   #a1a1aa;
+    --text-subtle:  #71717a;
+    --accent:        #fafafa;
+    --accent-hover:  #e5e5e5;
+    --accent-light:  #1a1a1a;
+    --accent-border: #2a2a2a;
+    --accent-text:   #fafafa;
+    --accent-ring:   #525252;
 
-  /* ══════════════════════════════════════════════════════
-     VS CODE THEME — electric blue
-     ══════════════════════════════════════════════════════ */
-  :root[data-theme="vscode"] {
-    --bg:          #f3f6fb;
-    --bg-subtle:   #e8edf5;
-    --surface:     #ffffff;
-    --surface-2:   #dde4f0;
-    --border:        #c8d3e8;
-    --border-strong: #9aadc8;
-    --accent:         #007acc;
-    --accent-hover:   #005f9e;
-    --accent-light:   #dbeafe;
-    --accent-border:  #bfdbfe;
-    --accent-text:    #1e40af;
-    --accent-ring:    #93c5fd;
+    --success:        #4ade80;
+    --success-bg:     #052e16;
+    --success-border: #14532d;
+    --warning:        #facc15;
+    --warning-bg:     #1a1404;
+    --warning-border: #422006;
+    --danger:         #f87171;
+    --danger-bg:      #1f0808;
+    --danger-border:  #450a0a;
+    --info:           #60a5fa;
+    --info-bg:        #0c1933;
+    --info-border:    #1e3a8a;
   }
-  .dark[data-theme="vscode"] {
-    --bg:          #1e1e1e;
-    --bg-subtle:   #252526;
-    --surface:     #252526;
-    --surface-2:   #2d2d30;
-    --border:        #3e3e42;
-    --border-strong: #555558;
-    --accent:         #569cd6;
-    --accent-hover:   #9cdcfe;
-    --accent-light:   #1a2840;
-    --accent-border:  #1f3558;
-    --accent-text:    #9cdcfe;
-    --accent-ring:    #007acc;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     SPOTIFY THEME — neon green
-     ══════════════════════════════════════════════════════ */
-  :root[data-theme="spotify"] {
-    --bg:          #f0fdf5;
-    --bg-subtle:   #dcfce9;
-    --surface:     #ffffff;
-    --surface-2:   #dcfce9;
-    --border:        #bbf7d4;
-    --border-strong: #6ee7b7;
-    --accent:         #1db954;
-    --accent-hover:   #17a14a;
-    --accent-light:   #dcfce9;
-    --accent-border:  #bbf7d4;
-    --accent-text:    #065f2e;
-    --accent-ring:    #6ee7b7;
-  }
-  .dark[data-theme="spotify"] {
-    --bg:          #0a0e0b;
-    --bg-subtle:   #121914;
-    --surface:     #121914;
-    --surface-2:   #1a2620;
-    --border:        #1a2620;
-    --border-strong: #253b2d;
-    --accent:         #1db954;
-    --accent-hover:   #4ade80;
-    --accent-light:   #071209;
-    --accent-border:  #0e2014;
-    --accent-text:    #4ade80;
-    --accent-ring:    #1db954;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     MARVEL THEME — crimson red
-     ══════════════════════════════════════════════════════ */
-  :root[data-theme="marvel"] {
-    --bg:          #fff5f5;
-    --bg-subtle:   #fee2e2;
-    --surface:     #ffffff;
-    --surface-2:   #fee2e2;
-    --border:        #fecaca;
-    --border-strong: #fca5a5;
-    --accent:         #dc2626;
-    --accent-hover:   #b91c1c;
-    --accent-light:   #fff5f5;
-    --accent-border:  #fecaca;
-    --accent-text:    #7f1d1d;
-    --accent-ring:    #fca5a5;
-  }
-  .dark[data-theme="marvel"] {
-    --bg:          #170000;
-    --bg-subtle:   #250000;
-    --surface:     #250000;
-    --surface-2:   #380000;
-    --border:        #380000;
-    --border-strong: #5c0000;
-    --accent:         #f87171;
-    --accent-hover:   #fca5a5;
-    --accent-light:   #1a0000;
-    --accent-border:  #2d0000;
-    --accent-text:    #fca5a5;
-    --accent-ring:    #dc2626;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     DRACULA THEME — vampire purple (Dracula code theme)
-     ══════════════════════════════════════════════════════ */
-  :root[data-theme="dracula"] {
-    --bg:          #f8f0ff;
-    --bg-subtle:   #f0e0ff;
-    --surface:     #ffffff;
-    --surface-2:   #ead6ff;
-    --border:        #dbb8ff;
-    --border-strong: #c084fc;
-    --accent:         #7c3aed;
-    --accent-hover:   #6d28d9;
-    --accent-light:   #f5f0ff;
-    --accent-border:  #e9d5ff;
-    --accent-text:    #4c1d95;
-    --accent-ring:    #a855f7;
-  }
-  .dark[data-theme="dracula"] {
-    --bg:          #282a36;
-    --bg-subtle:   #1e1f29;
-    --surface:     #1e1f29;
-    --surface-2:   #313244;
-    --border:        #44475a;
-    --border-strong: #6272a4;
-    --accent:         #bd93f9;
-    --accent-hover:   #caa8ff;
-    --accent-light:   #1a1027;
-    --accent-border:  #2a1a40;
-    --accent-text:    #caa8ff;
-    --accent-ring:    #7c3aed;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     DISCORD THEME — blurple
-     ══════════════════════════════════════════════════════ */
-  :root[data-theme="discord"] {
-    --bg:          #f0f1fe;
-    --bg-subtle:   #e3e4fd;
-    --surface:     #ffffff;
-    --surface-2:   #e3e4fd;
-    --border:        #c7c9fb;
-    --border-strong: #a5a8f7;
-    --accent:         #5865f2;
-    --accent-hover:   #4752c4;
-    --accent-light:   #eef0ff;
-    --accent-border:  #c7c9fb;
-    --accent-text:    #3442d9;
-    --accent-ring:    #a5a8f7;
-  }
-  .dark[data-theme="discord"] {
-    --bg:          #1a1c24;
-    --bg-subtle:   #202235;
-    --surface:     #202235;
-    --surface-2:   #2d3055;
-    --border:        #2d3055;
-    --border-strong: #404572;
-    --accent:         #7289da;
-    --accent-hover:   #8ea0e4;
-    --accent-light:   #151728;
-    --accent-border:  #202040;
-    --accent-text:    #8ea0e4;
-    --accent-ring:    #5865f2;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     SLACK THEME — sky teal
-     ══════════════════════════════════════════════════════ */
-  :root[data-theme="slack"] {
-    --bg:          #f0fbff;
-    --bg-subtle:   #e0f5fe;
-    --surface:     #ffffff;
-    --surface-2:   #cceeff;
-    --border:        #a0dcf5;
-    --border-strong: #5bc8ee;
-    --accent:         #0ea5e9;
-    --accent-hover:   #0284c7;
-    --accent-light:   #e0f5fe;
-    --accent-border:  #a0dcf5;
-    --accent-text:    #075985;
-    --accent-ring:    #5bc8ee;
-  }
-  .dark[data-theme="slack"] {
-    --bg:          #060e14;
-    --bg-subtle:   #0a1620;
-    --surface:     #0a1620;
-    --surface-2:   #0f2030;
-    --border:        #0f2030;
-    --border-strong: #1a3448;
-    --accent:         #36c5f0;
-    --accent-hover:   #7dd3fc;
-    --accent-light:   #040b10;
-    --accent-border:  #091520;
-    --accent-text:    #7dd3fc;
-    --accent-ring:    #0ea5e9;
-  }
-
-  /* ══════════════════════════════════════════════════════
-     FONT SYSTEM — data-font attribute on <html>
-     ══════════════════════════════════════════════════════ */
-  :root[data-font="jakarta"]  { --font-body: 'Plus Jakarta Sans', system-ui, sans-serif; }
-  :root[data-font="dm"]       { --font-body: 'DM Sans', system-ui, sans-serif; }
-  :root[data-font="grotesk"]  { --font-body: 'Space Grotesk', system-ui, sans-serif; }
-  :root[data-font="geist"]    { --font-body: 'Geist', system-ui, sans-serif; }
-  :root[data-font="inter"]    { --font-body: 'Inter', system-ui, sans-serif; }
 }
 
-/* ─── Base reset & theming ───────────────────────────────────────────────── */
+/* ─── Base reset ─────────────────────────────────────────────────────────── */
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
 
@@ -272,36 +81,36 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-family: var(--font-body, 'Inter'), system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   body {
     background-color: var(--bg);
     color: var(--text);
-    transition: background-color 350ms cubic-bezier(0.4,0,0.2,1),
-                color 350ms cubic-bezier(0.4,0,0.2,1);
+    transition: background-color 200ms ease, color 200ms ease;
   }
 
-  /* Hide sidebar scrollbar while keeping scroll functionality */
-  .sidebar-no-scrollbar {
-    scrollbar-width: none;
+  .sidebar-no-scrollbar { scrollbar-width: none; }
+  .sidebar-no-scrollbar::-webkit-scrollbar { display: none; }
+
+  ::selection { background-color: var(--accent); color: var(--bg); }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
   }
-  .sidebar-no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .dark *, .dark *::before, .dark *::after { border-color: var(--border); }
-
-  ::selection { background-color: var(--accent); color: #fff; }
-
-  h1,h2,h3,h4,h5,h6 { font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; }
   a { color: inherit; text-decoration: none; }
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────────────────── */
 @layer base {
-  ::-webkit-scrollbar          { width: 5px; height: 5px; }
+  ::-webkit-scrollbar          { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track    { background: transparent; }
   ::-webkit-scrollbar-thumb    { background: var(--border-strong); border-radius: 9999px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-subtle); }
@@ -311,15 +120,15 @@
 @layer components {
   .code-block {
     font-family: var(--font-mono);
-    font-size: 0.875rem;
+    font-size: 13px;
     line-height: 1.7;
-    background-color: #0d1117;
-    color: #e6edf3;
-    border-radius: 0.75rem;
+    background-color: #0a0a0a;
+    color: #ededed;
+    border-radius: 4px;
     overflow: hidden;
-    border: 1px solid #21262d;
+    border: 1px solid #1f1f1f;
   }
-  .code-block pre { margin: 0; padding: 1.25rem 1.5rem; overflow-x: auto; tab-size: 4; }
+  .code-block pre { margin: 0; padding: 14px 16px; overflow-x: auto; tab-size: 4; }
   .token-keyword   { color: #ff7b72; }
   .token-builtin   { color: #79c0ff; }
   .token-string    { color: #a5d6ff; }
@@ -335,31 +144,10 @@
 
 /* ─── Utilities ──────────────────────────────────────────────────────────── */
 @layer utilities {
-  /* Opt-out from the global transition for animations */
   .no-transition, .no-transition * { transition: none !important; }
+  .animate-fade-in  { animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-  .transition-smooth {
-    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
-  }
-
-  .animate-fade-in  { animation: fadeIn  0.25s ease-out; }
-  .animate-slide-up { animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1); }
-  .animate-scale-in { animation: scaleIn 0.2s  cubic-bezier(0.16,1,0.3,1); }
-  .animate-slide-right { animation: slideRight 0.35s cubic-bezier(0.16,1,0.3,1); }
-
-  @keyframes fadeIn      { from { opacity: 0; }                              to { opacity: 1; } }
-  @keyframes slideUp     { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes scaleIn     { from { opacity: 0; transform: scale(0.96); }      to { opacity: 1; transform: scale(1); } }
-  @keyframes slideRight  { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-  .glass {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  /* Theme utility shorthands */
   .bg-theme        { background-color: var(--bg); }
   .bg-surface      { background-color: var(--surface); }
   .bg-surface-2    { background-color: var(--surface-2); }
@@ -371,70 +159,35 @@
   .bg-accent       { background-color: var(--accent); }
   .bg-accent-light { background-color: var(--accent-light); }
   .border-accent   { border-color: var(--accent-border); }
-
-  /* Theme switch flash overlay */
-  .theme-flash {
-    animation: themeFlash 0.4s ease-out;
-  }
-  @keyframes themeFlash {
-    0%   { opacity: 0.15; }
-    100% { opacity: 0; }
-  }
-
-  /* Page entry */
-  .page-enter {
-    animation: pageEnter 0.4s cubic-bezier(0.16,1,0.3,1);
-  }
-  @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Drawer */
-  .drawer-enter  { animation: drawerIn  0.35s cubic-bezier(0.16,1,0.3,1); }
-  .drawer-exit   { animation: drawerOut 0.25s cubic-bezier(0.4,0,1,1) forwards; }
-  @keyframes drawerIn  { from { transform: translateX(100%); opacity: 0.7; } to { transform: translateX(0); opacity: 1; } }
-  @keyframes drawerOut { from { transform: translateX(0);    opacity: 1; }   to { transform: translateX(100%); opacity: 0; } }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   DARK MODE CIRCULAR REVEAL — View Transitions API
-   The new theme "grows" as a circle from the toggle button position.
-   --reveal-x / --reveal-y are set by JS before calling startViewTransition.
-   ═══════════════════════════════════════════════════════════════════════════ */
+#page-scroll { background: var(--bg); }
 
-::view-transition-group(root) {
-  animation-duration: 2.8s;
+/* ─── Smooth theme-switch animation (View Transitions API) ───────────────────
+   The new theme is revealed as a growing circle from the toggle button's
+   position. --reveal-x / --reveal-y are set by useAppSettings.toggleDark
+   immediately before document.startViewTransition().
+   ──────────────────────────────────────────────────────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
 }
 
-::view-transition-old(root) {
-  animation: theme-old-out 2.8s cubic-bezier(0.76, 0, 0.24, 1) both;
-  z-index: 1;
-}
+::view-transition-old(root) { z-index: 1; }
+::view-transition-new(root) { z-index: 2; }
 
 ::view-transition-new(root) {
-  animation: theme-circle-reveal 2.8s cubic-bezier(0.76, 0, 0.24, 1) both;
-  z-index: 2;
+  animation: theme-reveal 800ms cubic-bezier(0.65, 0, 0.35, 1) both;
 }
 
-@keyframes theme-circle-reveal {
-  0% {
-    clip-path: circle(0% at var(--reveal-x, 50%) var(--reveal-y, 50%));
-    filter: brightness(1.15) saturate(0.8);
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0% at var(--reveal-x, 100%) var(--reveal-y, 0%));
   }
-  30% {
-    filter: brightness(1.04) saturate(0.95);
+  to {
+    clip-path: circle(150% at var(--reveal-x, 100%) var(--reveal-y, 0%));
   }
-  100% {
-    clip-path: circle(150% at var(--reveal-x, 50%) var(--reveal-y, 50%));
-    filter: brightness(1) saturate(1);
-  }
-}
-
-@keyframes theme-old-out {
-  0%   { opacity: 1;   transform: scale(1);    filter: blur(0px); }
-  60%  { opacity: 0.5; transform: scale(0.99); filter: blur(1px); }
-  100% { opacity: 0;   transform: scale(0.97); filter: blur(3px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -444,17 +197,11 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   THEME BACKGROUND TINT
-   Adds a subtle radial glow from the accent colour so the bg feels
-   branded on every page, regardless of which theme is active.
-   ═══════════════════════════════════════════════════════════════════════════ */
-#page-scroll {
-  background:
-    radial-gradient(
-      ellipse 70% 45% at 85% 0%,
-      color-mix(in srgb, var(--accent) 7%, transparent) 0%,
-      transparent 100%
-    ),
-    var(--bg);
+/* Fallback for browsers without View Transitions API: gentle color crossfade */
+@supports not (view-transition-name: root) {
+  html,
+  body,
+  #page-scroll {
+    transition: background-color 280ms ease, color 280ms ease, border-color 280ms ease;
+  }
 }

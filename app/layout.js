@@ -2,6 +2,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Providers from '@/components/layout/Providers';
 import Navbar from '@/components/layout/Navbar';
+import BottomNav from '@/components/layout/BottomNav';
 import PageTransition from '@/components/layout/PageTransition';
 
 const inter = Inter({
@@ -25,6 +26,19 @@ export const metadata = {
   },
 };
 
+// Runs synchronously in <head> before React hydrates — prevents the
+// light-mode flash when a dark-mode user reloads the page.
+const themeBootstrap = `
+(function () {
+  try {
+    var saved = localStorage.getItem('app-dark-mode');
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var dark = saved !== null ? saved === 'true' : prefersDark;
+    if (dark) document.documentElement.classList.add('dark');
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({ children }) {
   return (
     <html
@@ -33,27 +47,21 @@ export default function RootLayout({ children }) {
       className={inter.variable}
     >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
       </head>
 
-      {/*
-        h-screen + overflow-hidden: browser scrollbar only shows inside #page-scroll,
-        starting below the navbar rather than at the very top of the viewport.
-      */}
-      <body className="h-screen overflow-hidden antialiased">
+      <body className="h-screen overflow-hidden antialiased" style={{ backgroundColor: 'var(--bg)' }}>
         <Providers>
           <div className="flex flex-col h-full">
             <Navbar />
-            <div id="page-scroll" className="flex-1 overflow-y-auto">
-              <PageTransition>
-                {children}
-              </PageTransition>
-            </div>
+            <main
+              id="page-scroll"
+              className="flex-1 overflow-y-auto pb-16 lg:pb-0"
+              style={{ backgroundColor: 'var(--bg)' }}
+            >
+              <PageTransition>{children}</PageTransition>
+            </main>
+            <BottomNav />
           </div>
         </Providers>
       </body>
