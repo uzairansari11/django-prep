@@ -49,16 +49,11 @@ export default function BottomNav() {
   return (
     <>
       {/* Bottom dock — visible below lg only */}
-      {/* Sits as a flex sibling to <main> in the root layout, so the main
-          scroll-container ends exactly at the top of this nav — no overlap,
-          no scrollbar running behind it. */}
+      {/* Apple-style liquid-glass bar: fixed to the viewport so content
+          scrolls behind it through the blur. */}
       <nav
-        className="lg:hidden shrink-0 border-t"
-        style={{
-          backgroundColor: 'var(--bg)',
-          borderColor: 'var(--border)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }}
+        className="glass lg:hidden fixed bottom-0 inset-x-0 z-40 border-t"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <ul className="grid grid-cols-5 max-w-2xl mx-auto">
           {PRIMARY.map(({ href, label, icon: Icon }) => {

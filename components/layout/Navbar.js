@@ -31,21 +31,24 @@ export default function Navbar() {
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
 
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-    else document.exitFullscreen();
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      // Some browsers (notably iOS Safari) reject the request silently —
+      // surface a console warning instead of throwing.
+      console.warn('Fullscreen toggle failed:', err);
+    }
   };
 
   const isActive = (href) => href === '/' ? pathname === '/' : pathname.startsWith(href);
 
   return (
-    <header
-      className="sticky top-0 z-30 border-b"
-      style={{
-        backgroundColor: 'var(--bg)',
-        borderColor: 'var(--border)',
-      }}
-    >
+    <header className="glass sticky top-0 z-30 border-b">
       <nav className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
 

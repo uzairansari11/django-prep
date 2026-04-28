@@ -47,7 +47,16 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
       className={inter.variable}
     >
-      <body className="h-screen overflow-hidden antialiased" style={{ backgroundColor: 'var(--bg)' }}>
+      <body
+        className="overflow-hidden antialiased"
+        style={{
+          backgroundColor: 'var(--bg)',
+          // dvh = dynamic viewport height — adjusts as mobile browser
+          // chrome (Safari URL bar etc.) shows / hides, so the bottom
+          // nav never gets shoved below the visible area.
+          height: '100dvh',
+        }}
+      >
         {/* Sync theme class before React hydrates — prevents the light-mode
             flash on reload when the user has dark mode saved. */}
         <Script id="theme-bootstrap" strategy="beforeInteractive">
@@ -58,8 +67,13 @@ export default function RootLayout({ children }) {
             <Navbar />
             <main
               id="page-scroll"
-              className="flex-1 overflow-y-auto overflow-x-hidden"
-              style={{ backgroundColor: 'var(--bg)' }}
+              className="flex-1 overflow-y-auto overflow-x-hidden lg:pb-0"
+              style={{
+                backgroundColor: 'var(--bg)',
+                // Reserve space for the fixed glass bottom nav (~56px)
+                // plus the device safe-area inset on notched devices.
+                paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
+              }}
             >
               <PageTransition>{children}</PageTransition>
             </main>

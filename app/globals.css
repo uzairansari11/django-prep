@@ -159,6 +159,51 @@
   .bg-accent       { background-color: var(--accent); }
   .bg-accent-light { background-color: var(--accent-light); }
   .border-accent   { border-color: var(--accent-border); }
+
+  /* ─── Liquid-glass surfaces ──────────────────────────────────────────────
+     Apple-style frosted glass: heavy backdrop-blur, mostly-opaque
+     translucent fill so text behind doesn't read through. */
+  .glass {
+    background-color: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border-color: color-mix(in srgb, var(--border-strong) 55%, transparent);
+  }
+  .glass-strong {
+    background-color: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(36px) saturate(200%);
+    -webkit-backdrop-filter: blur(36px) saturate(200%);
+    border-color: color-mix(in srgb, var(--border-strong) 60%, transparent);
+  }
+  /* Fallback: if backdrop-filter is unsupported (older Firefox, etc.)
+     fall back to a fully solid background so text never bleeds through. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass, .glass-strong { background-color: var(--bg); }
+  }
+  /* Subtle inner specular highlight for glass surfaces — mimics the bright
+     inner edge on iOS Liquid Glass. */
+  .glass::before,
+  .glass-strong::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 1px 0 0 color-mix(in srgb, var(--text) 6%, transparent);
+  }
+
+  /* ─── Glass button — translucent fill, heavy blur, soft border ───────── */
+  .glass-button {
+    background-color: color-mix(in srgb, var(--surface-2) 55%, transparent);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    border: 1px solid color-mix(in srgb, var(--border-strong) 60%, transparent);
+    transition: background-color 150ms ease, border-color 150ms ease;
+  }
+  .glass-button:hover {
+    background-color: color-mix(in srgb, var(--surface-2) 80%, transparent);
+    border-color: color-mix(in srgb, var(--border-strong) 80%, transparent);
+  }
 }
 
 #page-scroll { background: var(--bg); }
